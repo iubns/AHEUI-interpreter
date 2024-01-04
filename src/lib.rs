@@ -1,5 +1,9 @@
+use storage::Storage;
 use wasm_bindgen::prelude::*;
-use std::collections::VecDeque;
+
+pub mod storage;
+
+use std::io;
 
 #[wasm_bindgen]
 extern "C" {
@@ -32,17 +36,7 @@ enum CommandType {
 struct Command {
     way: (i8, i8),
     command_type: CommandType,
-    next_storage: StorageType,
-}
-
-impl Command {
-    fn new(command_type: CommandType, way: (i8, i8), next_storage: StorageType) -> Command{
-        Command{
-            way,
-            command_type,
-            next_storage,
-        }
-    }
+    third_char: u32,
 }
 
 
@@ -69,6 +63,18 @@ fn get_command_type(first_char: &u32) -> CommandType {
     }
 }
 
+fn get_line_count (third_char: &u32) -> usize {
+    match third_char {
+        16 => return 4,
+        15 => return 8,
+        11 => return 9,
+        7 |22 | 24 => return 3,
+        1 => return  2,
+        12 => return 7,
+        _ => panic!("정의가 필요한 종성이 있음 : {}", third_char),
+    }
+}
+
 fn get_move_way(second_char: &u32) -> (i8, i8){
     println!("second_char {}", &second_char);
     match second_char {
@@ -89,24 +95,6 @@ fn get_move_way(second_char: &u32) -> (i8, i8){
     }
 }
 
-enum StorageType {
-    Stack(usize),
-    Queue,
-}
-
-fn get_storage_type (third_char: u32) -> StorageType{
-    match third_char {
-        11 => StorageType::Queue,
-        _ => StorageType::Stack(third_char as usize),
-    }
-}
-
-fn init_storage (storage: &mut Vec<Vec<i32>>){
-    for _ in 0..26  {
-        storage.push(Vec::new())
-    }
-}
-
 
 fn parse(content: & str) -> Vec<Vec<char>>{
  let mut content_array = Vec::new();
@@ -124,14 +112,11 @@ fn parse(content: & str) -> Vec<Vec<char>>{
 
 pub fn run(content: &str) -> &str
 {
-    let mut _storage : Vec<Vec<i32>> = Vec::new();
-    let mut _queue: VecDeque<i32> = VecDeque::new();
-    init_storage(&mut _storage);
+    let mut storage = Storage::new();
 
     let content_array = parse(&content);
 
     let mut _position = (0, 0);
-    let mut _current_storage_type = StorageType::Stack(0);
     loop {
         let line_array = content_array.get(_position.1);
 
@@ -154,18 +139,92 @@ pub fn run(content: &str) -> &str
         let x = _position.0 as i8 + cmd.way.0;
         let y = _position.1 as i8 + cmd.way.1;
 
-        match (&cmd.command_type, &_current_storage_type) {
-            (CommandType::Exit, _) => {
+        match (&cmd.command_type) {
+            CommandType::Exit => {
                 println!("done!");
                 break
             },
-            (_, StorageType::Stack(stack_mun)) => {
-                let stack_option = _storage.get_mut(*stack_mun);
-                if let Some(stack) = stack_option  {
-                    run_command(cmd, &_current_storage_type, stack, &mut _queue)
+            CommandType::Add => {
+                let first = storage.pop();
+                let second = storage.pop();
+                storage.push(first + second);
+            },
+            CommandType::Sub => {
+                let first = storage.pop();
+                let second = storage.pop();
+                storage.push(first - second);
+            },
+            CommandType::Mul => {
+                let first = storage.pop();
+                let second = storage.pop();
+                storage.push(first * second);
+            },
+            CommandType::Mod => {
+                let first = storage.pop();
+                let second = storage.pop();
+                storage.push(first / second);
+            },
+            CommandType::Push => {
+                match cmd.third_char {
+                    // O
+                    21 => {
+                        let mut input: String = String::new();
+
+                        match io::stdin().read_line(&mut input) {
+                            Ok(_) => {
+                                match input.trim().parse::<i32>() {
+                                    Ok(n) => {
+
+                                        storage.push(n);
+                                    },
+                                    Err(_) => {
+                                        eprintln!("[*] {} is invalid integer.", input);
+                                        storage.push(0);
+                                    }
+                                }
+                            },
+                            Err(_) => {
+                                eprintln!("[*] Cannot read a line from stdin.");
+                                storage.push(0);
+                            }
+                        };
+                    },
+                    // ㅎ
+                    27 => {
+                        let mut input: String = String::new();
+                        storage.push(match io::stdin().read_line(&mut input) {
+                            Ok(_) => {
+                                input.chars().next().unwrap() as i32
+                            },
+                            Err(_) => {
+                                eprintln!("[*] Cannot read a line from stdin.");
+                                0
+                            }
+                        });
+                    },
+                    _ => {
+                        storage.push(get_line_count(&cmd.third_char).try_into().unwrap())
+                    }
                 }
             },
-            _ => ()
+            CommandType::Duple => {
+                storage.duplicate()
+            },
+            CommandType::Pop => {
+                let value = storage.pop();
+                match cmd.third_char {
+                    27 => {
+                        print!("{}", std::char::from_u32(value as u32).unwrap());
+                    },
+                    _ => {}
+                }
+            },
+            CommandType::Change => {
+                storage.swap()
+            }
+            _ => {
+                print!("형태는 구현이 필요함")
+            },
         }
         
 
@@ -185,38 +244,6 @@ fn get_command(char: &char) -> Command {
     
     let command_type = get_command_type(&first_char);
     let way = get_move_way(&second_char);
-    let next_storage_type = get_storage_type(third_char);
 
-    return  Command::new(command_type, way, next_storage_type);
-}
-
-
-fn run_command(cmd:Command, current_storage_type: &StorageType, storage: &mut Vec<i32>, queue: &mut VecDeque<i32>){
-    match cmd.command_type {
-        CommandType::Add => add(current_storage_type, storage, queue),
-        _ => println!("a")
-    }
-}
-
-
-fn add(storage_type: &StorageType, stack: &mut Vec<i32>, queue: &mut VecDeque<i32>) {
-    if let storage_type = StorageType::Queue {
-        let first = queue.pop_back();
-        let second = queue.pop_back();
-
-        match (first,second) {
-            (Some(x), Some(y)) => queue.push_back( x + y),
-            _ => (),
-        }
-    }
-
-    if let StorageType::Stack(_stack_num) = *storage_type {
-        let first = stack.pop();
-        let second = stack.pop();
-
-        match (first, second) {
-            (Some(x), Some(y)) => stack.push(x + y),
-            _ => (),
-        }
-    }
+    return  Command{command_type, way, third_char};
 }
