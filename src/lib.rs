@@ -41,7 +41,6 @@ struct Command {
 
 
 fn get_command_type(first_char: &u32) -> CommandType {
-    println!("first_char {}", &first_char);
     match first_char {
         0 | 1 | 15 => CommandType::None, //ㄱ ㄲ ㅋ
         3 => CommandType::Add, //ㄷ
@@ -71,12 +70,12 @@ fn get_line_count (third_char: &u32) -> usize {
         7 |22 | 24 => return 3,
         1 => return  2,
         12 => return 7,
+        8 => return 5,
         _ => panic!("정의가 필요한 종성이 있음 : {}", third_char),
     }
 }
 
 fn get_move_way(second_char: &u32) -> (i8, i8){
-    println!("second_char {}", &second_char);
     match second_char {
         0 => (1, 0), // ㅏ
         2 => (2, 0),// ㅑ
@@ -139,7 +138,7 @@ pub fn run(content: &str) -> &str
         let x = _position.0 as i8 + cmd.way.0;
         let y = _position.1 as i8 + cmd.way.1;
 
-        match (&cmd.command_type) {
+        match(&cmd.command_type) {
             CommandType::Exit => {
                 println!("done!");
                 break
@@ -152,7 +151,7 @@ pub fn run(content: &str) -> &str
             CommandType::Sub => {
                 let first = storage.pop();
                 let second = storage.pop();
-                storage.push(first - second);
+                storage.push(second - first);
             },
             CommandType::Mul => {
                 let first = storage.pop();
@@ -229,13 +228,13 @@ pub fn run(content: &str) -> &str
         
 
         _position = (x as usize, y as usize);
-        println!("{:?}", _position)
+        //println!("{:?}", _position)
     };
     "c"
 }
 
 fn get_command(char: &char) -> Command {
-    print!("{}", char);
+    //print!("{}", char);
     let unicode = *char as u32;
 
     let first_char = (unicode - 0xAC00) / (21 * 28) ;

@@ -77,15 +77,15 @@ impl Storage{
                     Some(value) => value,
                     None => return
                 };
-                let second =match self.stack[stack_number].pop() {
+                let second = match self.stack[stack_number].pop() {
                     Some(value) => value,
                     None => {
                         self.stack[stack_number].push(first);
                         return;
                     }
                 };
-                self.stack[stack_number].push(second);
                 self.stack[stack_number].push(first);
+                self.stack[stack_number].push(second);
             },
             StorageType::Queue => {
                 let first = match self.queue.pop_front() {
