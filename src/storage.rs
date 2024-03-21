@@ -150,7 +150,8 @@ impl Storage{
     pub fn equal(&mut self){
         let first = self.pop();
         let second = self.pop();
-        let result = match (second - first) {
+        let diff = second - first;
+        let result = match diff {
             i if i >= 0 => 1,
             _ => 0
         };
