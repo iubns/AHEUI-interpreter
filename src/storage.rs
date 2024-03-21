@@ -146,4 +146,14 @@ impl Storage{
         }
         return  true;
     }
+
+    pub fn equal(&mut self){
+        let first = self.pop();
+        let second = self.pop();
+        let result = match (second - first) {
+            i if i >= 0 => 1,
+            _ => 0
+        };
+        self.push(result);
+    }
 }

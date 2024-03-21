@@ -34,7 +34,7 @@ enum CommandType {
     Exit,
 }
 struct Command {
-    way: (i8, i8),
+    way: (i8, i8, bool),
     command_type: CommandType,
     third_char: u32,
 }
@@ -79,22 +79,22 @@ fn get_line_count (third_char: &u32) -> usize {
     }
 }
 
-fn get_move_way(second_char: &u32) -> (i8, i8){
+fn get_move_way(second_char: &u32) -> (i8, i8, bool){
     match second_char {
-        0 => (1, 0), // ㅏ
-        2 => (2, 0),// ㅑ
-        4 => (-1, 0),// ㅓ
-        6 => (-2, 0),// ㅕ
-        8 => (0, -1),// ㅗ
-        12 => (0, -2),// ㅛ
-        13 => (0, 1),// ㅜ
-        17 => (0, 2),// ㅠ
+        0 => (1, 0, false), // ㅏ
+        2 => (2, 0, false),// ㅑ
+        4 => (-1, 0, false),// ㅓ
+        6 => (-2, 0, false),// ㅕ
+        8 => (0, -1, false),// ㅗ
+        12 => (0, -2, false),// ㅛ
+        13 => (0, 1, false),// ㅜ
+        17 => (0, 2, false),// ㅠ
 
         //Todo: 모음 이동 방향 더 해야 함
-        18 => (0, 0),// ㅡ
-        19 => (0, 0), // ㅢ
-        20 => (0, 0),// ㅣ
-        _ => (0, 0),// 기타
+        18 => (1, -1, true),// ㅡ
+        19 => (-1, -1, true), // ㅢ
+        20 => (-1, 1, true),// ㅣ
+        _ => (0, 0, false),// 기타
     }
 }
 
@@ -120,7 +120,7 @@ pub fn run(content: &str) -> &str
     let content_array = parse(&content);
 
     let mut _position = (0, 0);
-    let mut way = (0,0);
+    let mut way = (0, 0, false);
     loop {
         let line_array = content_array.get(_position.1);
 
@@ -143,13 +143,22 @@ pub fn run(content: &str) -> &str
         let cmd = match command {
             Some(char) => get_command(char),
             None => {
-                println!("none char!");
-                break
+                let mut x = match (_position.0, way.0) {
+                    (0, -1) => count_of_line as i8 - 1,
+                    _ => _position.0 as i8 + way.0
+                };
+                let y = _position.1 as i8 + way.1;
+        
+                if x > count_of_line as i8 { x = 0; }
+
+                _position = (x as usize, y as usize);
+                continue;
             }
         };
 
         way = match cmd.way {
-            (0,0) => way,
+            (0, 0, false) => way,
+            (x, y, true) => (way.0 * x, way.1 * y, false),
             _ => cmd.way,
         };
 
@@ -255,17 +264,21 @@ pub fn run(content: &str) -> &str
                 let target_value = storage.pop();
                 if target_value == 0 {revert_way(&mut way)};
             }
+            CommandType::Equal => {
+                storage.equal()
+            }
             _ => {
                 print!("형태는 구현이 필요함")
             },
         }
         
-        let x = match (_position.0, way.0) {
+        let mut x = match (_position.0, way.0) {
             (0, -1) => count_of_line as i8 - 1,
             _ => _position.0 as i8 + way.0
         };
         let y = _position.1 as i8 + way.1;
 
+        if x > count_of_line as i8 { x = 0; }
 
         _position = (x as usize, y as usize);
         //println!("{:?}", _position)
@@ -287,7 +300,7 @@ fn get_command(char: &char) -> Command {
     return  Command{command_type, way, third_char};
 }
 
-fn revert_way(way: &mut (i8, i8)){
+fn revert_way(way: &mut (i8, i8, bool)){
     way.0 = way.0 * -1;
     way.1 = way.1 * -1;
 }
