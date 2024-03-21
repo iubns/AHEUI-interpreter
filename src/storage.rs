@@ -107,4 +107,43 @@ impl Storage{
             }
         }
     }
+
+    pub fn select(&mut self, value: u32){
+        match value {
+            21 => {
+                self.selected_storage = StorageType::Queue
+            }
+            27 => {
+                panic!("통로는 구현 예정입니다.")
+            }
+            stack_index => {
+                self.selected_storage = StorageType::Stack(stack_index as usize)
+            }
+        }
+    }
+
+    pub fn move_value(&mut self, value: usize) -> bool{
+        let current_storage_value_option = match self.selected_storage {
+            StorageType::Queue => self.queue.pop_front(),
+            StorageType::Stack(stack_index) => self.stack[stack_index].pop()
+        };
+
+        let current_storage_value = match current_storage_value_option {
+            Some(value) => value,
+            None => return false
+        };
+        
+        match value {
+            21 => {
+                self.queue.push_back(current_storage_value)
+            }
+            27 => {
+                panic!("통로는 구현 예저입니다.")
+            }
+            stack_index => {
+                self.stack[stack_index].push(current_storage_value)
+            }
+        }
+        return  true;
+    }
 }

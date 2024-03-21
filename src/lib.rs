@@ -29,7 +29,7 @@ enum CommandType {
     Move,
     Equal,
     Condition,
-    Change,
+    Swap,
     Duple,
     Exit,
 }
@@ -54,7 +54,7 @@ fn get_command_type(first_char: &u32) -> CommandType {
         9 => CommandType::Select, // ㅅ
         12 => CommandType::Equal, // ㅈ
         14 => CommandType::Condition, // ㅊ
-        17 => CommandType::Change, // ㅍ
+        17 => CommandType::Swap, // ㅍ
         18 => CommandType::Exit, // ㅎ
         10 => CommandType::Move, // ㅆ
         8 => CommandType::Duple, // ㅃ
@@ -62,15 +62,19 @@ fn get_command_type(first_char: &u32) -> CommandType {
     }
 }
 
+//없음, 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
 fn get_line_count (third_char: &u32) -> usize {
     match third_char {
-        16 => return 4,
+        0 | 27 => return 0,
+        21 => return 1,
+        1 | 4 | 19 => return  2,
+        7 | 22 | 24 => return 3,
+        2 | 3 | 16 | 17 | 20 | 23 | 25 | 26 => return 4,
+        5 | 6 | 8 => return 5,
+        18 => return 6,
+        9 | 12 => return 7,
         15 => return 8,
-        11 => return 9,
-        7 |22 | 24 => return 3,
-        1 => return  2,
-        12 => return 7,
-        8 => return 5,
+        10 | 11 | 13 | 14  => return 9,
         _ => panic!("정의가 필요한 종성이 있음 : {}", third_char),
     }
 }
@@ -116,16 +120,25 @@ pub fn run(content: &str) -> &str
     let content_array = parse(&content);
 
     let mut _position = (0, 0);
+    let mut way = (0,0);
     loop {
         let line_array = content_array.get(_position.1);
 
         let command = match line_array {
-            Some(line) => line.get(_position.0),
+            Some(line) => {
+                line.get(_position.0)
+            },
             None => {
                 println!("none line!");
                 break
             },
         };
+
+        let count_of_line = match line_array {
+            Some(line) => line.len(),
+            None => 0,
+        };
+
 
         let cmd = match command {
             Some(char) => get_command(char),
@@ -135,10 +148,12 @@ pub fn run(content: &str) -> &str
             }
         };
 
-        let x = _position.0 as i8 + cmd.way.0;
-        let y = _position.1 as i8 + cmd.way.1;
+        way = match cmd.way {
+            (0,0) => way,
+            _ => cmd.way,
+        };
 
-        match(&cmd.command_type) {
+        match &cmd.command_type {
             CommandType::Exit => {
                 println!("done!");
                 break
@@ -158,10 +173,15 @@ pub fn run(content: &str) -> &str
                 let second = storage.pop();
                 storage.push(first * second);
             },
+            CommandType::Div => {
+                let first = storage.pop();
+                let second = storage.pop();
+                storage.push(second / first);
+            },
             CommandType::Mod => {
                 let first = storage.pop();
                 let second = storage.pop();
-                storage.push(first / second);
+                storage.push(second % first);
             },
             CommandType::Push => {
                 match cmd.third_char {
@@ -215,17 +235,37 @@ pub fn run(content: &str) -> &str
                     27 => {
                         print!("{}", std::char::from_u32(value as u32).unwrap());
                     },
+                    21 => {
+                        print!("{}", value);
+                    }
                     _ => {}
                 }
             },
-            CommandType::Change => {
+            CommandType::Swap => {
                 storage.swap()
+            }
+            CommandType::Select => {
+                storage.select(cmd.third_char)
+            }
+            CommandType::Move => {
+                let has_value = storage.move_value(cmd.third_char as usize);
+                if !has_value {revert_way(&mut way)}
+            }
+            CommandType::Condition => {
+                let target_value = storage.pop();
+                if target_value == 0 {revert_way(&mut way)};
             }
             _ => {
                 print!("형태는 구현이 필요함")
             },
         }
         
+        let x = match (_position.0, way.0) {
+            (0, -1) => count_of_line as i8 - 1,
+            _ => _position.0 as i8 + way.0
+        };
+        let y = _position.1 as i8 + way.1;
+
 
         _position = (x as usize, y as usize);
         //println!("{:?}", _position)
@@ -245,4 +285,9 @@ fn get_command(char: &char) -> Command {
     let way = get_move_way(&second_char);
 
     return  Command{command_type, way, third_char};
+}
+
+fn revert_way(way: &mut (i8, i8)){
+    way.0 = way.0 * -1;
+    way.1 = way.1 * -1;
 }
