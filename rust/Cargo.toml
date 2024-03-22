@@ -6,10 +6,14 @@ version = "0.1.3"
 edition = "2021"
 repository = "https://github.com/iubns/AHEUI-interpreter"
 
+[package.metadata.commands]
+build = "wasm-pack build --target web  --out-dir ../aheui_interpreter/public/rust"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-#crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 wasm-bindgen = "0.2.83"
+

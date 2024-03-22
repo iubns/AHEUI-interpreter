@@ -1,3 +1,10 @@
-/target
-/Cargo.lock
-/pkg
+.vscode
+
+/aheui_interpreter/node_modules
+/aheui_interpreter/package-lock.json
+
+
+/rust/target
+/rust/Cargo.lock
+/rust/pkg
+

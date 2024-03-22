@@ -5,15 +5,46 @@ pub mod storage;
 
 use std::io;
 
-#[wasm_bindgen]
-extern "C" {
-    fn alert(s: &str);
-    fn prompt(s: &str);
-}
+// First up let's take a look of binding `console.log` manually, without the
+// help of `web_sys`. Here we're writing the `#[wasm_bindgen]` annotations
+// manually ourselves, and the correctness of our program relies on the
+// correctness of these annotations!
 
 #[wasm_bindgen]
-pub fn greet(content: &str){
-    prompt(content);
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
+// Next let's define a macro that's like `println!`, only it works for
+// `console.log`. Note that `println!` doesn't actually work on the wasm target
+// because the standard library currently just eats all output. To get
+// `println!`-like behavior in your app you'll likely want a macro like this.
+
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+
+// And finally, we don't even have to define the `log` function ourselves! The
+// `web_sys` crate already has it defined for us.
+
+#[wasm_bindgen]
+pub fn run_cmd(str: &str) {
+    run(str);
 }
 
 enum CommandType {
@@ -90,10 +121,10 @@ fn get_move_way(second_char: &u32) -> (i8, i8, bool){
         13 => (0, 1, false),// ㅜ
         17 => (0, 2, false),// ㅠ
 
-        //Todo: 모음 이동 방향 더 해야 함
         18 => (1, -1, true),// ㅡ
         19 => (-1, -1, true), // ㅢ
         20 => (-1, 1, true),// ㅣ
+        
         _ => (0, 0, false),// 기타
     }
 }
@@ -242,10 +273,10 @@ pub fn run(content: &str) -> &str
                 let value = storage.pop();
                 match cmd.third_char {
                     27 => {
-                        print!("{}", std::char::from_u32(value as u32).unwrap());
+                        console_log!("{}", std::char::from_u32(value as u32).unwrap());
                     },
                     21 => {
-                        print!("{}", value);
+                        console_log!("{}", value);
                     }
                     _ => {}
                 }
