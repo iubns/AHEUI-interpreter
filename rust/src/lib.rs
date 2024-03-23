@@ -43,8 +43,8 @@ macro_rules! console_log {
 // `web_sys` crate already has it defined for us.
 
 #[wasm_bindgen]
-pub fn run_cmd(str: &str) {
-    run(str);
+pub fn run_cmd(str: &str) -> Vec<String> {
+    return run(str);
 }
 
 enum CommandType {
@@ -144,7 +144,7 @@ fn parse(content: & str) -> Vec<Vec<char>>{
     content_array
 }
 
-pub fn run(content: &str) -> &str
+pub fn run(content: &str) -> Vec<String>
 {
     let mut storage = Storage::new();
 
@@ -152,6 +152,8 @@ pub fn run(content: &str) -> &str
 
     let mut _position = (0, 0);
     let mut way = (0, 0, false);
+    let mut result_list = Vec::new();
+
     loop {
         let line_array = content_array.get(_position.1);
 
@@ -233,7 +235,6 @@ pub fn run(content: &str) -> &str
                             Ok(_) => {
                                 match input.trim().parse::<i32>() {
                                     Ok(n) => {
-
                                         storage.push(n);
                                     },
                                     Err(_) => {
@@ -273,10 +274,10 @@ pub fn run(content: &str) -> &str
                 let value = storage.pop();
                 match cmd.third_char {
                     27 => {
-                        console_log!("{}", std::char::from_u32(value as u32).unwrap());
+                        result_list.push(std::char::from_u32(value as u32).unwrap().to_string());
                     },
                     21 => {
-                        console_log!("{}", value);
+                        result_list.push(value.to_string());
                     }
                     _ => {}
                 }
@@ -314,7 +315,8 @@ pub fn run(content: &str) -> &str
         _position = (x as usize, y as usize);
         //println!("{:?}", _position)
     };
-    "c"
+
+    return result_list;
 }
 
 fn get_command(char: &char) -> Command {
