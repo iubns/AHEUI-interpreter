@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import useRust from "../../hooks/rust"
+import Controller from "./components/Controller"
+import Editor from "./components/Editor"
 
 export default function Home() {
   const [cmd, setCMD] = useState("박망해")
@@ -15,9 +17,10 @@ export default function Home() {
   }
 
   return (
-    <div>
-      겁나 빠른 아희 인터프리터
-      <div className="flex flex-col">
+    <div className="flex flex-col">
+      <Controller />
+      <Editor />
+      <div>
         <textarea
           style={{
             backgroundColor: "black",
