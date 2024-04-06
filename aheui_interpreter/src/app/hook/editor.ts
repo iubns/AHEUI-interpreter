@@ -4,12 +4,7 @@ import _ from "lodash"
 
 const cellListAtom = atom<CellValue[]>({
   key: "cell-list",
-  default: [
-    {
-      position: { x: 0, y: 2 },
-      value: "박",
-    },
-  ],
+  default: [],
 })
 
 export default function useEditor() {
@@ -22,14 +17,28 @@ export default function useEditor() {
   function removeCell(currentCursor: CellValue) {
     const filtered = cellList.filter(
       (cell) =>
-        cell.position.x !== currentCursor.position.x &&
-        cell.position.y !== currentCursor.position.y
+        !(
+          cell.position.x === currentCursor.position.x &&
+          cell.position.y === currentCursor.position.y
+        )
     )
-    setCellList(filtered)
+    setCellList([...filtered])
+  }
+
+  function changeCell(targeCell: CellValue) {
+    const filtered = cellList.filter(
+      (cell) =>
+        !(
+          cell.position.x === targeCell.position.x &&
+          cell.position.y === targeCell.position.y
+        )
+    )
+    setCellList([...filtered, targeCell])
   }
 
   return {
     cellList,
+    changeCell,
     addCell,
     removeCell,
   }

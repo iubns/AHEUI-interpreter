@@ -50,8 +50,8 @@ pub fn run_cmd(str: &str) -> Vec<String> {
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct Position {
-    pub x: u32,
-    pub y: u32,
+    pub x: i32,
+    pub y: i32,
 }
 
 

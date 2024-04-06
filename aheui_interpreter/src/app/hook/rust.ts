@@ -24,14 +24,19 @@ export default async function useRust() {
   }
 
   function runNew() {
-    const cell = cellList[0]
-    if (!cell) return
-    //const cellValue = get_cell_value()
-    const list = [get_cell_value(), get_cell_value(), get_cell_value()]
-    list[0].value = "박"
-    list[1].value = "망"
-    list[2].value = "해"
-    return run_new(list)
+    //Todo: 구멍 채우기 필요.
+    const rsCellList = cellList
+      .map((cell) => {
+        const rsCell = get_cell_value()
+        //Todo: 왜 안들어 가는가?
+        rsCell.position.x = cell.position.x
+        rsCell.position.y = cell.position.y
+        rsCell.value = cell.value || "ㅇ"
+        return rsCell
+      })
+      .sort((a, b) => a.position.x - b.position.x)
+      .sort((a, b) => a.position.y - b.position.y)
+    return run_new(rsCellList)
   }
 
   return {
