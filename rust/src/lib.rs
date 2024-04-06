@@ -47,6 +47,42 @@ pub fn run_cmd(str: &str) -> Vec<String> {
     return run(str);
 }
 
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
+pub struct Position {
+    pub x: u32,
+    pub y: u32,
+}
+
+
+#[wasm_bindgen]
+pub struct CellValue {
+    pub position: Position,
+    pub value: char
+}
+
+#[wasm_bindgen]
+pub fn run_new(cell_list: Vec<CellValue>) ->  Vec<String> {
+    let mut list = Vec::new();
+    for cell in cell_list {
+        list.push(cell.value)
+    };
+    let cmd = list.iter().cloned().collect::<String>();
+    return run(&cmd);
+}
+
+#[wasm_bindgen]
+pub fn get_cell_value() -> CellValue {
+    let position = Position{
+        x: 0,
+        y: 0
+    };
+    CellValue{
+        position,
+        value: ' '
+    }
+}
+
 enum CommandType {
     Push,
     Pop,
