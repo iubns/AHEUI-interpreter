@@ -29,14 +29,9 @@ export default function Editor() {
         cell.position.x === mousePosition.x &&
         cell.position.y === mousePosition.y
     )
-    if (foundCell) {
-      currentCursor.position = foundCell.position
-      currentCursor.value = foundCell.value
-    } else {
-      currentCursor.position = mousePosition
-      currentCursor.value = ""
-    }
+    setValueToCursor({ x: mousePosition.x, y: mousePosition.y })
     hiddenRef.current?.focus()
+    sv(v + 1)
   }
 
   function changeCommand(e: ChangeEvent<HTMLInputElement>) {
@@ -52,21 +47,58 @@ export default function Editor() {
 
     const lastChar = e.target.value[e.target.value.length - 1]
 
-    changeCell({ ...currentCursor, value: lastChar })
-
+    changeCell({
+      position: {
+        x: currentCursor.position.x,
+        y: currentCursor.position.y,
+      },
+      value: lastChar,
+    })
     sv(v + 1)
   }
 
+  function setValueToCursor({ x, y }: Position) {
+    const foundCell = cellList.find(
+      (cell) => cell.position.x === x && cell.position.y === y
+    )
+    currentCursor.position.x = x
+    currentCursor.position.y = y
+    setInputValue(foundCell ? foundCell.value || "" : "")
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    console.log(e.code)
-    if (e.code === "Enter") {
-      setMousePosition({
-        x: currentCursor.position.x + 1,
+    if (e.keyCode === 229) return
+    switch (e.code) {
+      case "Enter":
+        currentCursor.position.x = currentCursor.position.x + 1
+        break
+      case "ArrowLeft":
+        currentCursor.position.x = currentCursor.position.x - 1
+        break
+      case "ArrowUp":
+        currentCursor.position.y = currentCursor.position.y - 1
+        break
+      case "ArrowRight":
+        currentCursor.position.x = currentCursor.position.x + 1
+        break
+      case "ArrowDown":
+        currentCursor.position.y = currentCursor.position.y + 1
+        break
+      case "Delete":
+        setInputValue("")
+        removeCell(currentCursor)
+        setPreLength(0)
+        break
+    }
+    if (e.code === "Enter" || e.code.startsWith("Arrow")) {
+      setValueToCursor({
+        x: currentCursor.position.x,
         y: currentCursor.position.y,
       })
-      setTimeout(clickCell, 0)
-      sv(v + 1)
+      hiddenRef.current?.focus()
+      e.preventDefault()
     }
+    sv(v + 1)
   }
 
   return (

@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 
-
 enum StorageType {
     Stack(usize),
     Queue

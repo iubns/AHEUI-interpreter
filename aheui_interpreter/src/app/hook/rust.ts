@@ -1,7 +1,6 @@
 import { atom, useRecoilState } from "recoil"
 import init, {
   InitOutput,
-  run_cmd,
   run_new,
   get_cell_value,
 } from "../../../public/rust/aheui_interpreter"
@@ -12,8 +11,14 @@ const rustAtom = atom<InitOutput | null>({
   default: null,
 })
 
+const resultAtom = atom<string>({
+  key: "result",
+  default: "",
+})
+
 export default async function useRust() {
   const [rust, setRust] = useRecoilState(rustAtom)
+  const [result, setResult] = useRecoilState(resultAtom)
   const { cellList } = useEditor()
 
   if (!rust) {
@@ -24,23 +29,19 @@ export default async function useRust() {
   }
 
   function runNew() {
-    //Todo: 구멍 채우기 필요.
     const rsCellList = cellList
       .map((cell) => {
-        const rsCell = get_cell_value()
-        //Todo: 왜 안들어 가는가?
-        rsCell.position.x = cell.position.x
-        rsCell.position.y = cell.position.y
+        const rsCell = get_cell_value(cell.position.x, cell.position.y)
         rsCell.value = cell.value || "ㅇ"
         return rsCell
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    return run_new(rsCellList)
+    setResult(run_new(rsCellList).join(""))
   }
 
   return {
     runNew,
-    run_cmd,
+    result,
   }
 }

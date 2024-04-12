@@ -1,5 +1,6 @@
 use storage::Storage;
 use wasm_bindgen::prelude::*;
+use processor::Processor;
 
 pub mod storage;
 
@@ -43,22 +44,21 @@ macro_rules! console_log {
 // `web_sys` crate already has it defined for us.
 
 #[wasm_bindgen]
-pub fn run_cmd(str: &str) -> Vec<String> {
-    return run(str);
-}
-
-#[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
-
 #[wasm_bindgen]
 pub struct CellValue {
     pub position: Position,
     pub value: char
+}
+
+#[wasm_bindgen]
+pub fn run_one() {
+
 }
 
 #[wasm_bindgen]
@@ -72,10 +72,10 @@ pub fn run_new(cell_list: Vec<CellValue>) ->  Vec<String> {
 }
 
 #[wasm_bindgen]
-pub fn get_cell_value() -> CellValue {
+pub fn get_cell_value(x: i32, y: i32) -> CellValue {
     let position = Position{
-        x: 0,
-        y: 0
+        x,
+        y
     };
     CellValue{
         position,
