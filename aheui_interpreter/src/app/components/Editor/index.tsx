@@ -5,6 +5,7 @@ import Position from "@/interfaces/position"
 import Cursor from "./Cursor"
 import _ from "lodash"
 import useEditor from "@/app/hook/editor"
+import CurrentPosition from "./CurrentPosition"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }
 
@@ -107,13 +108,14 @@ export default function Editor() {
       style={{
         backgroundColor: "black",
         height: "100px",
+        zIndex: "10",
       }}
       onMouseMove={mouseMove}
       onClick={clickCell}
     >
-      {v}
       <input
         type="text"
+        style={{ zIndex: 0 }}
         onKeyDown={onKeyDown}
         ref={hiddenRef}
         value={inputValue}
@@ -121,6 +123,7 @@ export default function Editor() {
       />
       <Cursor position={currentCursor.position} />
       <MousePointer mousePosition={mousePosition} />
+      <CurrentPosition />
       {cellList.map((cellValue) => (
         <Cell
           key={`${cellValue.position.x}_${cellValue.position.y}`}

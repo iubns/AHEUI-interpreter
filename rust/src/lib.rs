@@ -1,8 +1,11 @@
-use storage::Storage;
 use wasm_bindgen::prelude::*;
+use storage::Storage;
 use processor::Processor;
+use cell::{CellValue, Position};
 
 pub mod storage;
+pub mod processor;
+pub mod cell;
 
 use std::io;
 
@@ -43,36 +46,18 @@ macro_rules! console_log {
 // And finally, we don't even have to define the `log` function ourselves! The
 // `web_sys` crate already has it defined for us.
 
+
 #[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Position {
-    pub x: i32,
-    pub y: i32,
+pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Processor {
+    let mut processor = Processor::new();
+    processor.set_cmd_size(Position {x: cmd_size_x, y: cmd_size_y});
+    processor.set_command(cell_list);
+    processor.run_one();
+    return processor;
 }
 
 #[wasm_bindgen]
-pub struct CellValue {
-    pub position: Position,
-    pub value: char
-}
-
-#[wasm_bindgen]
-pub fn run_one() {
-
-}
-
-#[wasm_bindgen]
-pub fn run_new(cell_list: Vec<CellValue>) ->  Vec<String> {
-    let mut list = Vec::new();
-    for cell in cell_list {
-        list.push(cell.value)
-    };
-    let cmd = list.iter().cloned().collect::<String>();
-    return run(&cmd);
-}
-
-#[wasm_bindgen]
-pub fn get_cell_value(x: i32, y: i32) -> CellValue {
+pub fn get_cell_value(x: i8, y: i8) -> CellValue {
     let position = Position{
         x,
         y

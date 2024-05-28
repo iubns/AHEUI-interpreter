@@ -1,16 +1,24 @@
+use wasm_bindgen::prelude::*;
 use std::collections::VecDeque;
 
-enum StorageType {
+#[derive(Clone)]
+pub enum StorageType {
     Stack(usize),
     Queue
 }
 
+#[wasm_bindgen]
+#[derive(Clone)]
 pub struct Storage {
-    stack: [Vec<i32>; 26],
-    queue: VecDeque<i32>,
-    selected_storage: StorageType
+    #[wasm_bindgen(skip)]
+    pub stack: [Vec<i32>;26],
+    #[wasm_bindgen(skip)]
+    pub queue: VecDeque<i32>,
+    #[wasm_bindgen(skip)]
+    pub selected_storage: StorageType
 }
 
+#[wasm_bindgen]
 impl Storage{
     pub fn new () -> Storage {
         Storage{

@@ -3,6 +3,8 @@ import init, {
   InitOutput,
   run_new,
   get_cell_value,
+  Position,
+  Processor,
 } from "../../../public/rust/aheui_interpreter"
 import useEditor from "./editor"
 
@@ -11,14 +13,32 @@ const rustAtom = atom<InitOutput | null>({
   default: null,
 })
 
-const resultAtom = atom<string>({
-  key: "result",
-  default: "",
+const resultAtom = atom<Position>({
+  key: "result-atom",
+  default: undefined,
+})
+
+const processorAtom = atom<Processor | null>({
+  key: "processor-atom",
+  default: null,
+})
+
+export const processorPositionAtom = atom<Position>({
+  key: "processor-position",
+  default: {
+    x: -1,
+    y: -1,
+    free: () => {},
+  },
 })
 
 export default async function useRust() {
   const [rust, setRust] = useRecoilState(rustAtom)
   const [result, setResult] = useRecoilState(resultAtom)
+  const [processor, setProcessor] = useRecoilState(processorAtom)
+  const [processorPosition, setProcessorPosition] = useRecoilState(
+    processorPositionAtom
+  )
   const { cellList } = useEditor()
 
   if (!rust) {
@@ -28,7 +48,7 @@ export default async function useRust() {
     setRust(initRust)
   }
 
-  function runNew() {
+  function initProcessor() {
     const rsCellList = cellList
       .map((cell) => {
         const rsCell = get_cell_value(cell.position.x, cell.position.y)
@@ -37,11 +57,33 @@ export default async function useRust() {
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    setResult(run_new(rsCellList).join(""))
+    const newProcessor = run_new(rsCellList, 3, 3)
+    setProcessor(newProcessor)
+  }
+
+  function startAll() {
+    initProcessor()
+    if (!processor) return
+    while (!processor.isEnd) {
+      processor.run_one()
+    }
+    console.log(processor)
+    console.log(processor.get_result)
+  }
+
+  function startOne() {
+    if (!processor) {
+      initProcessor()
+    }
+    if (processor) {
+      processor.run_one()
+      setProcessorPosition(processor.current_position)
+    }
   }
 
   return {
-    runNew,
+    startOne,
+    startAll,
     result,
   }
 }
