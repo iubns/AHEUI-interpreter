@@ -58,7 +58,7 @@ export default async function useRust() {
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    const newProcessor = run_new(rsCellList, 10, 10)
+    const newProcessor = run_new(rsCellList, 100, 100)
     setProcessor(newProcessor)
     setProcessorPosition(newProcessor.current_position)
     setResult([])
@@ -69,8 +69,7 @@ export default async function useRust() {
     if (!processor) return
     while (!processor.isEnd) {
       processor.run_one()
-      console.log(processor.current_position.x, processor.current_position.y)
-      setProcessorPosition(processor.current_position)
+      setProcessorPosition(processor.next_position)
     }
     setResult(processor.get_result)
   }
@@ -82,7 +81,7 @@ export default async function useRust() {
     }
     if (processor) {
       processor.run_one()
-      setProcessorPosition(processor.current_position)
+      setProcessorPosition(processor.next_position)
       setResult(processor.get_result)
       if (processor.isEnd) {
         setProcessor(null)

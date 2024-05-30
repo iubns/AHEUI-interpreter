@@ -14,7 +14,6 @@ pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Pro
     let mut processor = Processor::new();
     processor.set_cmd_size(Position {x: cmd_size_x, y: cmd_size_y});
     processor.set_command(cell_list);
-    processor.run_one();
     return processor;
 }
 

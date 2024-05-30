@@ -42,6 +42,7 @@ pub struct Processor {
     #[wasm_bindgen(skip)]
     pub storage: storage::Storage,
     pub current_position: Position,
+    pub next_position: Position,
     #[wasm_bindgen(skip)]
     pub cmd_list: Vec<CellValue>,
     pub cmd_size: Position,
@@ -68,7 +69,11 @@ impl Processor {
         Processor {
             storage: Storage::new(),
             current_position: Position {
-                x: -1,
+                x: 0,
+                y: 0,
+            },
+            next_position: Position {
+                x: 0,
                 y: 0,
             },
             cmd_list: Vec::new(),
@@ -98,8 +103,8 @@ impl Processor {
     }
 
     pub fn run_one (&mut self) {
-        self.current_position.x += self.way.0;
-        self.current_position.y += self.way.1;
+        self.current_position.x = self.next_position.x;
+        self.current_position.y = self.next_position.y;
         
         if self.cmd_size.x < self.current_position.x 
         {
@@ -247,6 +252,8 @@ impl Processor {
                 print!("형태는 구현이 필요함")
             },
         }
-    
+
+        self.next_position.x = self.current_position.x + self.way.0;
+        self.next_position.y = self.current_position.y + self.way.1;
     }
 }
