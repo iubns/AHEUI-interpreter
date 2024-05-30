@@ -13,9 +13,9 @@ const rustAtom = atom<InitOutput | null>({
   default: null,
 })
 
-const resultAtom = atom<Position>({
+export const resultAtom = atom<String[]>({
   key: "result-atom",
-  default: undefined,
+  default: [],
 })
 
 const processorAtom = atom<Processor | null>({
@@ -49,6 +49,7 @@ export default async function useRust() {
   }
 
   function initProcessor() {
+    console.log("initProcessor")
     const rsCellList = cellList
       .map((cell) => {
         const rsCell = get_cell_value(cell.position.x, cell.position.y)
@@ -57,8 +58,10 @@ export default async function useRust() {
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    const newProcessor = run_new(rsCellList, 3, 3)
+    const newProcessor = run_new(rsCellList, 10, 10)
     setProcessor(newProcessor)
+    setProcessorPosition(newProcessor.current_position)
+    setResult([])
   }
 
   function startAll() {
@@ -66,18 +69,24 @@ export default async function useRust() {
     if (!processor) return
     while (!processor.isEnd) {
       processor.run_one()
+      console.log(processor.current_position.x, processor.current_position.y)
+      setProcessorPosition(processor.current_position)
     }
-    console.log(processor)
-    console.log(processor.get_result)
+    setResult(processor.get_result)
   }
 
   function startOne() {
     if (!processor) {
       initProcessor()
+      return
     }
     if (processor) {
       processor.run_one()
       setProcessorPosition(processor.current_position)
+      setResult(processor.get_result)
+      if (processor.isEnd) {
+        setProcessor(null)
+      }
     }
   }
 

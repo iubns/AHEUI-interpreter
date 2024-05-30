@@ -1,13 +1,37 @@
-use std::io;
+use std::{any::Any, io};
 
 use wasm_bindgen::prelude::*;
 use crate::{
     cell::{CellValue, Position}, get_command, get_line_count, revert_way, storage::{self, Storage}, CommandType 
 };
 
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
 
 #[wasm_bindgen]
 #[derive(Copy, Clone)]
+//Todo: way 변경하기
 pub struct Way {
     value: Position,
     isReverse: bool
@@ -44,7 +68,7 @@ impl Processor {
         Processor {
             storage: Storage::new(),
             current_position: Position {
-                x: -1, 
+                x: -1,
                 y: 0,
             },
             cmd_list: Vec::new(),
@@ -76,8 +100,6 @@ impl Processor {
     pub fn run_one (&mut self) {
         self.current_position.x += self.way.0;
         self.current_position.y += self.way.1;
-
-        self.result_list.push("te".to_string());
         
         if self.cmd_size.x < self.current_position.x 
         {
@@ -89,23 +111,23 @@ impl Processor {
             self.current_position.y = 0;
         }
 
-        let cellValue = self.cmd_list.iter().find(|cmd| cmd.position.x == self.current_position.x && cmd.position.y == self.current_position.y);
+        let cell_value = self.cmd_list.iter().find(|cmd| cmd.position.x == self.current_position.x && cmd.position.y == self.current_position.y);
 
-        let cmd = match cellValue {
+        let cmd = match cell_value {
             Some(cell) => get_command(&cell.value),
             None => {
                 let mut x = match (self.current_position.x, self.current_position.y) {
-                (0, -1) => self.cmd_size.y as i8 - 1,
-                _ => self.current_position.y as i8 + self.way.0
-            };
-            let y = self.current_position.y as i8 + self.way.1;
-    
-            if x > self.cmd_size.y as i8 { x = 0; }
+                    (0, -1) => self.cmd_size.y as i8 - 1,
+                    _ => self.current_position.x as i8 + self.way.0
+                };
+                let y = self.current_position.y as i8 + self.way.1;
+        
+                if x > self.cmd_size.x as i8 { x = 0; }
 
-            self.current_position.x = x;
-            self.current_position.y = y;
-            return;
-        },
+                self.current_position.x = x;
+                self.current_position.y = y;
+                return;
+            },
         };
 
 
@@ -114,6 +136,7 @@ impl Processor {
             (x, y, true) => (cmd.way.0 * x, cmd.way.1 * y, false),
             _ => cmd.way,
         };
+
 
         match &cmd.command_type {
             CommandType::Exit => {
@@ -224,18 +247,6 @@ impl Processor {
                 print!("형태는 구현이 필요함")
             },
         }
-        
-        let mut x = match (self.current_position.x, self.current_position.y) {
-            (0, -1) => self.cmd_size.y as i8 - 1,
-            _ => self.current_position.x as i8 + self.way.0
-        };
-        let y = self.current_position.y as i8 + self.way.1;
-
-        if x > self.cmd_size.y as i8 { x = 0; }
-
-        self.current_position.x = x;
-        self.current_position.y = y;
-        //println!("{:?}", _position)
     
     }
 }

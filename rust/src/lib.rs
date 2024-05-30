@@ -9,44 +9,6 @@ pub mod cell;
 
 use std::io;
 
-// First up let's take a look of binding `console.log` manually, without the
-// help of `web_sys`. Here we're writing the `#[wasm_bindgen]` annotations
-// manually ourselves, and the correctness of our program relies on the
-// correctness of these annotations!
-
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-
-    // The `console.log` is quite polymorphic, so we can bind it with multiple
-    // signatures. Note that we need to use `js_name` to ensure we always call
-    // `log` in JS.
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_u32(a: u32);
-
-    // Multiple arguments too!
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_many(a: &str, b: &str);
-}
-
-// Next let's define a macro that's like `println!`, only it works for
-// `console.log`. Note that `println!` doesn't actually work on the wasm target
-// because the standard library currently just eats all output. To get
-// `println!`-like behavior in your app you'll likely want a macro like this.
-
-macro_rules! console_log {
-    // Note that this is using the `log` function imported above during
-    // `bare_bones`
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
-
-// And finally, we don't even have to define the `log` function ourselves! The
-// `web_sys` crate already has it defined for us.
-
-
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Processor {
     let mut processor = Processor::new();
@@ -305,21 +267,24 @@ pub fn run(content: &str) -> Vec<String>
             },
             CommandType::Swap => {
                 storage.swap()
-            }
+            },
             CommandType::Select => {
                 storage.select(cmd.third_char)
-            }
+            },
             CommandType::Move => {
                 let has_value = storage.move_value(cmd.third_char as usize);
                 if !has_value {revert_way(&mut way)}
-            }
+            },
             CommandType::Condition => {
                 let target_value = storage.pop();
                 if target_value == 0 {revert_way(&mut way)};
-            }
+            },
             CommandType::Equal => {
                 storage.equal()
-            }
+            },
+            CommandType::None => {
+                
+            },
             _ => {
                 print!("형태는 구현이 필요함")
             },

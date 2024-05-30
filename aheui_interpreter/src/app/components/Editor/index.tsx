@@ -108,6 +108,7 @@ export default function Editor() {
       style={{
         backgroundColor: "black",
         height: "100px",
+        marginTop: "10px",
         zIndex: "10",
       }}
       onMouseMove={mouseMove}
@@ -115,7 +116,11 @@ export default function Editor() {
     >
       <input
         type="text"
-        style={{ zIndex: 0 }}
+        style={{
+          zIndex: 0,
+          position: "fixed",
+          top: 1000,
+        }}
         onKeyDown={onKeyDown}
         ref={hiddenRef}
         value={inputValue}
