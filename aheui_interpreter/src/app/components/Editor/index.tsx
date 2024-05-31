@@ -9,7 +9,12 @@ import CurrentPosition from "./CurrentPosition"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }
 
-export default function Editor() {
+interface IProps {
+  editorHeight: number
+  isMoveMode: boolean
+}
+
+export default function Editor({ editorHeight, isMoveMode }: IProps) {
   const { cellList, addCell, removeCell, changeCell } = useEditor()
   const hiddenRef = useRef<HTMLInputElement>(null)
   const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 })
@@ -104,12 +109,9 @@ export default function Editor() {
 
   return (
     <div
-      className="relative"
+      className="relative z-10"
       style={{
-        backgroundColor: "black",
-        height: "100px",
-        marginTop: "10px",
-        zIndex: "10",
+        height: `${editorHeight}px`,
       }}
       onMouseMove={mouseMove}
       onClick={clickCell}
@@ -119,7 +121,7 @@ export default function Editor() {
         style={{
           zIndex: 0,
           position: "fixed",
-          top: 1000,
+          top: 0,
         }}
         onKeyDown={onKeyDown}
         ref={hiddenRef}
@@ -127,7 +129,7 @@ export default function Editor() {
         onChange={changeCommand}
       />
       <Cursor position={currentCursor.position} />
-      <MousePointer mousePosition={mousePosition} />
+      {!isMoveMode && <MousePointer mousePosition={mousePosition} />}
       <CurrentPosition />
       {cellList.map((cellValue) => (
         <Cell

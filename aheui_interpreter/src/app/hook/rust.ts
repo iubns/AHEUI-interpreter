@@ -42,14 +42,11 @@ export default async function useRust() {
   const { cellList } = useEditor()
 
   if (!rust) {
-    const initRust = await init(
-      "http://localhost:3000/rust/aheui_interpreter_bg.wasm"
-    )
+    const initRust = await init("/rust/aheui_interpreter_bg.wasm")
     setRust(initRust)
   }
 
   function initProcessor() {
-    console.log("initProcessor")
     const rsCellList = cellList
       .map((cell) => {
         const rsCell = get_cell_value(cell.position.x, cell.position.y)
@@ -93,5 +90,6 @@ export default async function useRust() {
     startOne,
     startAll,
     result,
+    initProcessor,
   }
 }
