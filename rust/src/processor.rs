@@ -65,6 +65,11 @@ impl Processor {
         self.result_list.clone()
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn get_storage(&self) -> Vec<i32> {
+        self.storage.stack[0].clone()
+    }
+
     pub fn new () -> Processor {
         Processor {
             storage: Storage::new(),
@@ -102,6 +107,19 @@ impl Processor {
         self.cmd_size = cmd_size;
     }
 
+    fn calc_next_position (&mut self) {
+        self.next_position.x = match self.current_position.x + self.way.0 {
+            -1 | -2 => self.cmd_size.x - 1,
+            //self.cmd_size.x => 0,
+            _ => self.current_position.x + self.way.0,
+        };
+        self.next_position.y = match self.current_position.y + self.way.1 {
+            -1 | -2 => self.cmd_size.y - 1,
+            //self.cmd_size.x => 0,
+            _ => self.current_position.y + self.way.1
+        };
+    }
+
     pub fn run_one (&mut self) {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
@@ -123,6 +141,7 @@ impl Processor {
             None => {
                 self.next_position.x = self.current_position.x + self.way.0;
                 self.next_position.y = self.current_position.y + self.way.1;
+                self.calc_next_position();
                 return;
             },
         };
@@ -141,28 +160,103 @@ impl Processor {
                 return;
             },
             CommandType::Add => {
-                let first = self.storage.pop();
-                let second = self.storage.pop();
+                let first = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
+                let second = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.storage.revert(first);
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 self.storage.push(first + second);
             },
             CommandType::Sub => {
-                let first = self.storage.pop();
-                let second = self.storage.pop();
+                let first = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
+                let second = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.storage.revert(first);
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 self.storage.push(second - first);
             },
             CommandType::Mul => {
-                let first = self.storage.pop();
-                let second = self.storage.pop();
+                let first = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
+                let second = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.storage.revert(first);
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 self.storage.push(first * second);
             },
             CommandType::Div => {
-                let first = self.storage.pop();
-                let second = self.storage.pop();
+                let first = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
+                let second = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.storage.revert(first);
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 self.storage.push(second / first);
             },
             CommandType::Mod => {
-                let first = self.storage.pop();
-                let second = self.storage.pop();
+                let first = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.calc_next_position();
+                        revert_way(&mut self.way);
+                        return;
+                    }
+                };
+                let second = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        self.storage.revert(first);
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 self.storage.push(second % first);
             },
             CommandType::Push => {
@@ -211,7 +305,14 @@ impl Processor {
                 self.storage.duplicate()
             },
             CommandType::Pop => {
-                let value = self.storage.pop();
+                let value = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        self.calc_next_position();
+                        return;
+                    }
+                };
                 match cmd.third_char {
                     27 => {
                         self.result_list.push(std::char::from_u32(value as u32).unwrap().to_string());
@@ -233,27 +334,24 @@ impl Processor {
                 if !has_value {revert_way(&mut self.way)}
             }
             CommandType::Condition => {
-                let target_value = self.storage.pop();
+                let target_value = match self.storage.pop() {
+                    Some(value) => value,
+                    None => {
+                        revert_way(&mut self.way);
+                        return;
+                    }
+                };
                 if target_value == 0 {revert_way(&mut self.way)};
             }
             CommandType::Equal => {
-                self.storage.equal()
+                if self.storage.equal() == false {
+                    revert_way(&mut self.way);
+                }
             }
             _ => {
                 print!("형태는 구현이 필요함")
             },
         }
-
-        self.next_position.x = match self.current_position.x + self.way.0 {
-            -1 => self.cmd_size.x - 1,
-            //self.cmd_size.x => 0,
-            _ => self.current_position.x + self.way.0,
-        };
-        self.next_position.y = match self.current_position.y + self.way.1 {
-            -1 => self.cmd_size.y - 1,
-            //self.cmd_size.x => 0,
-            _ => self.current_position.y + self.way.1
-        };
-        
+        self.calc_next_position();
     }
 }

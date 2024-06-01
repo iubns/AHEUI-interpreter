@@ -39,19 +39,13 @@ impl Storage{
         }
     }
 
-    pub fn pop(&mut self) -> i32 {
+    pub fn pop(&mut self) -> Option<i32> {
         match self.selected_storage {
             StorageType::Stack(stack_mun) => {
-                match self.stack[stack_mun].pop() {
-                    Some(value) => return value,
-                    None => return 0,
-                }
+                self.stack[stack_mun].pop()
             },
             StorageType::Queue => {
-                match self.queue.pop_front() {
-                    Some(value) => return value,
-                    None => return 0,
-                }
+                self.queue.pop_front()
             }
         }
     }
@@ -154,14 +148,35 @@ impl Storage{
         return  true;
     }
 
-    pub fn equal(&mut self){
-        let first = self.pop();
-        let second = self.pop();
+    pub fn equal(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => return false
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return false
+            }
+        }; 
         let diff = second - first;
         let result = match diff {
             i if i >= 0 => 1,
             _ => 0
         };
         self.push(result);
+        true
+    }
+
+    pub fn revert(&mut self, value: i32){
+        match self.selected_storage {
+            StorageType::Stack(stack_index) => {
+                self.stack[stack_index].push(value)
+            },
+            StorageType::Queue => {
+                self.queue.push_front(value)
+            }
+        }
     }
 }

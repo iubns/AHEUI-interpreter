@@ -47,15 +47,23 @@ export default async function useRust() {
   }
 
   function initProcessor() {
+    let maxRowSize = 0
+    let maxColSize = 0
     const rsCellList = cellList
       .map((cell) => {
         const rsCell = get_cell_value(cell.position.x, cell.position.y)
         rsCell.value = cell.value || "ㅇ"
+        if (maxRowSize < cell.position.y) {
+          maxRowSize = cell.position.y
+        }
+        if (maxColSize < cell.position.x) {
+          maxColSize = cell.position.x
+        }
         return rsCell
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    const newProcessor = run_new(rsCellList, 20, 20)
+    const newProcessor = run_new(rsCellList, maxColSize, maxRowSize)
     setProcessor(newProcessor)
     setProcessorPosition(newProcessor.current_position)
     setResult([])
@@ -80,6 +88,7 @@ export default async function useRust() {
       processor.run_one()
       setProcessorPosition(processor.next_position)
       setResult(processor.get_result)
+      console.log(processor.get_storage)
       if (processor.isEnd) {
         setProcessor(null)
       }
