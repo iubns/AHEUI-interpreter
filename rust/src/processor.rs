@@ -121,20 +121,11 @@ impl Processor {
         let cmd = match cell_value {
             Some(cell) => get_command(&cell.value),
             None => {
-                let mut x = match (self.current_position.x, self.current_position.y) {
-                    (0, -1) => self.cmd_size.y as i8 - 1,
-                    _ => self.current_position.x as i8 + self.way.0
-                };
-                let y = self.current_position.y as i8 + self.way.1;
-        
-                if x > self.cmd_size.x as i8 { x = 0; }
-
-                self.current_position.x = x;
-                self.current_position.y = y;
+                self.next_position.x = self.current_position.x + self.way.0;
+                self.next_position.y = self.current_position.y + self.way.1;
                 return;
             },
         };
-
 
         self.way = match cmd.way {
             (0, 0, false) => self.way,
@@ -253,7 +244,16 @@ impl Processor {
             },
         }
 
-        self.next_position.x = self.current_position.x + self.way.0;
-        self.next_position.y = self.current_position.y + self.way.1;
+        self.next_position.x = match self.current_position.x + self.way.0 {
+            -1 => self.cmd_size.x - 1,
+            //self.cmd_size.x => 0,
+            _ => self.current_position.x + self.way.0,
+        };
+        self.next_position.y = match self.current_position.y + self.way.1 {
+            -1 => self.cmd_size.y - 1,
+            //self.cmd_size.x => 0,
+            _ => self.current_position.y + self.way.1
+        };
+        
     }
 }

@@ -1,6 +1,7 @@
 import { atom, useRecoilState } from "recoil"
 import { CellValue } from "../components/Editor/Cell"
 import _ from "lodash"
+import { useRef } from "react"
 
 const cellListAtom = atom<CellValue[]>({
   key: "cell-list",
@@ -9,8 +10,10 @@ const cellListAtom = atom<CellValue[]>({
 
 export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
+  const cellListRef = useRef(cellList)
 
   function bulkUpdate(updateCellList: CellValue[]) {
+    console.log(cellListRef.current)
     let tempCellList: CellValue[] = []
     for (const cell of updateCellList) {
       const foundCell = cellList.find(
@@ -46,7 +49,6 @@ export default function useEditor() {
           cell.position.y === targeCell.position.y
         )
     )
-    console.log(filtered)
     setCellList([...filtered, targeCell])
   }
 

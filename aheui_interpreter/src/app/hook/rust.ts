@@ -55,7 +55,7 @@ export default async function useRust() {
       })
       .sort((a, b) => a.position.x - b.position.x)
       .sort((a, b) => a.position.y - b.position.y)
-    const newProcessor = run_new(rsCellList, 100, 100)
+    const newProcessor = run_new(rsCellList, 20, 20)
     setProcessor(newProcessor)
     setProcessorPosition(newProcessor.current_position)
     setResult([])

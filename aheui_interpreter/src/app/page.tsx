@@ -28,7 +28,7 @@ export default function Home() {
       <div className="flex flex-row h-full bg-gray-700">
         <Menu />
         <div
-          className="flex flex-col h-full flex-grow"
+          className="flex flex-col flex-grow h-full"
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUpDivider}
         >
