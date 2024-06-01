@@ -107,7 +107,7 @@ fn get_move_way(second_char: &u32) -> (i8, i8, bool){
         19 => (-1, -1, true), // ㅢ
         20 => (-1, 1, true),// ㅣ
         
-        _ => (0, 0, false),// 기타
+        _ => (1, 0, false),// 기타
     }
 }
 

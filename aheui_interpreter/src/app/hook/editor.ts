@@ -10,8 +10,21 @@ const cellListAtom = atom<CellValue[]>({
 export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
 
-  function addCell(cell: CellValue) {
-    setCellList([...cellList, cell])
+  function bulkUpdate(updateCellList: CellValue[]) {
+    let tempCellList: CellValue[] = []
+    for (const cell of updateCellList) {
+      const foundCell = cellList.find(
+        (oldCell) =>
+          oldCell.position.x === cell.position.x &&
+          oldCell.position.y === cell.position.y
+      )
+      if (foundCell) {
+        foundCell.value = cell.value
+      } else {
+        tempCellList.push(cell)
+      }
+    }
+    setCellList([...cellList, ...tempCellList])
   }
 
   function removeCell(currentCursor: CellValue) {
@@ -33,13 +46,14 @@ export default function useEditor() {
           cell.position.y === targeCell.position.y
         )
     )
+    console.log(filtered)
     setCellList([...filtered, targeCell])
   }
 
   return {
     cellList,
     changeCell,
-    addCell,
+    bulkUpdate,
     removeCell,
   }
 }

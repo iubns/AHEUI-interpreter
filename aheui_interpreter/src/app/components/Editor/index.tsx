@@ -1,9 +1,16 @@
-import { ChangeEvent, KeyboardEvent, MouseEvent, useRef, useState } from "react"
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import Cell, { CellValue } from "./Cell"
 import MousePointer from "./MousePointer"
 import Position from "@/interfaces/position"
 import Cursor from "./Cursor"
-import _ from "lodash"
+import _, { forEach } from "lodash"
 import useEditor from "@/app/hook/editor"
 import CurrentPosition from "./CurrentPosition"
 
@@ -15,13 +22,42 @@ interface IProps {
 }
 
 export default function Editor({ editorHeight, isMoveMode }: IProps) {
-  const { cellList, addCell, removeCell, changeCell } = useEditor()
+  const { cellList, bulkUpdate, removeCell, changeCell } = useEditor()
   const hiddenRef = useRef<HTMLInputElement>(null)
   const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 })
   const [preLength, setPreLength] = useState(0)
   const [inputValue, setInputValue] = useState("")
 
   const [v, sv] = useState(0)
+
+  useEffect(() => {
+    window.addEventListener("paste", paste)
+    return () => {
+      window.removeEventListener("paste", paste)
+    }
+  }, [])
+
+  function paste(event: ClipboardEvent) {
+    const paste = event.clipboardData?.getData("text")
+    if (!paste) return
+
+    let tempCellList: CellValue[] = []
+    paste.split("\n").map((row, rowIndex) => {
+      for (let colIndex = 0; colIndex < row.length; colIndex++) {
+        tempCellList.push({
+          position: {
+            x: currentCursor.position.x + colIndex,
+            y: currentCursor.position.y + rowIndex,
+          },
+          value: row[colIndex],
+        })
+      }
+    })
+    bulkUpdate(tempCellList)
+    sv(v + 1)
+
+    event.preventDefault()
+  }
 
   function mouseMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
     const x = e.pageX - e.currentTarget.offsetLeft
@@ -53,6 +89,16 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
 
     const lastChar = e.target.value[e.target.value.length - 1]
 
+    if (preLength !== e.target.value.length && preLength > 0) {
+      changeCell({
+        position: {
+          x: currentCursor.position.x,
+          y: currentCursor.position.y,
+        },
+        value: e.target.value[preLength - 1],
+      })
+      currentCursor.position.x++
+    }
     changeCell({
       position: {
         x: currentCursor.position.x,
@@ -76,24 +122,36 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
     if (e.keyCode === 229) return
     switch (e.code) {
       case "Enter":
-        currentCursor.position.x = currentCursor.position.x + 1
+        currentCursor.position.y++
         break
       case "ArrowLeft":
-        currentCursor.position.x = currentCursor.position.x - 1
+        if (currentCursor.position.x > 0) {
+          currentCursor.position.x--
+        }
         break
       case "ArrowUp":
-        currentCursor.position.y = currentCursor.position.y - 1
+        if (currentCursor.position.y > 0) {
+          currentCursor.position.y--
+        }
         break
       case "ArrowRight":
-        currentCursor.position.x = currentCursor.position.x + 1
+        currentCursor.position.x++
         break
       case "ArrowDown":
-        currentCursor.position.y = currentCursor.position.y + 1
+        currentCursor.position.y++
         break
       case "Delete":
         setInputValue("")
         removeCell(currentCursor)
         setPreLength(0)
+        break
+      case "Backspace":
+        if (inputValue.length === 0) {
+          removeCell(currentCursor)
+          if (currentCursor.position.x > 0) {
+            currentCursor.position.x--
+          }
+        }
         break
     }
     if (e.code === "Enter" || e.code.startsWith("Arrow")) {
