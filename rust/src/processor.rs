@@ -109,12 +109,12 @@ impl Processor {
 
     fn calc_next_position (&mut self) {
         self.next_position.x = match self.current_position.x + self.way.0 {
-            -1 | -2 => self.cmd_size.x - 1,
+            -1 | -2 => self.cmd_size.x,
             //self.cmd_size.x => 0,
             _ => self.current_position.x + self.way.0,
         };
         self.next_position.y = match self.current_position.y + self.way.1 {
-            -1 | -2 => self.cmd_size.y - 1,
+            -1 | -2 => self.cmd_size.y,
             //self.cmd_size.x => 0,
             _ => self.current_position.y + self.way.1
         };

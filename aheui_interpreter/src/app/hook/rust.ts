@@ -67,16 +67,16 @@ export default async function useRust() {
     setProcessor(newProcessor)
     setProcessorPosition(newProcessor.current_position)
     setResult([])
+    return newProcessor
   }
 
   function startAll() {
-    initProcessor()
-    if (!processor) return
-    while (!processor.isEnd) {
-      processor.run_one()
-      setProcessorPosition(processor.next_position)
+    const newProcessor = initProcessor()
+    while (!newProcessor.isEnd) {
+      newProcessor.run_one()
+      setProcessorPosition(newProcessor.next_position)
     }
-    setResult(processor.get_result)
+    setResult(newProcessor.get_result)
   }
 
   function startOne() {
@@ -88,7 +88,6 @@ export default async function useRust() {
       processor.run_one()
       setProcessorPosition(processor.next_position)
       setResult(processor.get_result)
-      console.log(processor.get_storage)
       if (processor.isEnd) {
         setProcessor(null)
       }

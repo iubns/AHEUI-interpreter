@@ -167,7 +167,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
 
   return (
     <div
-      className="relative z-10"
+      className="relative z-10 overflow-scroll"
       style={{
         height: `${editorHeight}px`,
       }}

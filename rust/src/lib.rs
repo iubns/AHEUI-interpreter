@@ -1,5 +1,4 @@
 use wasm_bindgen::prelude::*;
-use storage::Storage;
 use processor::Processor;
 use cell::{CellValue, Position};
 
@@ -7,7 +6,24 @@ pub mod storage;
 pub mod processor;
 pub mod cell;
 
-use std::io;
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
 
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Processor {
@@ -127,14 +143,16 @@ fn parse(content: & str) -> Vec<Vec<char>>{
 }
 
 fn get_command(char: &char) -> Command {
-    //print!("{}", char);
     let unicode = *char as u32;
-
+    
     let first_char = (unicode - 0xAC00) / (21 * 28) ;
     let second_char = (unicode - 0xAC00) % (21 * 28) / 28 ;
     let third_char = (unicode - 0xAC00) % 28 ;
     
-    let command_type = get_command_type(&first_char);
+    let command_type = match unicode > 0xAC00 {
+        true => get_command_type(&first_char),
+        false => CommandType::None,
+    }; 
     let way = get_move_way(&second_char);
 
     return  Command{command_type, way, third_char};

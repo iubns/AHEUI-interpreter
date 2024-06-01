@@ -13,7 +13,6 @@ export default function useEditor() {
   const cellListRef = useRef(cellList)
 
   function bulkUpdate(updateCellList: CellValue[]) {
-    console.log(cellListRef.current)
     let tempCellList: CellValue[] = []
     for (const cell of updateCellList) {
       const foundCell = cellList.find(
