@@ -1,4 +1,4 @@
-import { atom, useRecoilState } from "recoil"
+import { atom, useRecoilState, useSetRecoilState } from "recoil"
 import init, {
   InitOutput,
   run_new,
@@ -32,13 +32,25 @@ export const processorPositionAtom = atom<Position>({
   },
 })
 
-export default async function useRust() {
+export const processingTime = atom<number | null>({
+  key: "processing-time",
+  default: null,
+})
+
+export const runningCount = atom<number | null>({
+  key: "running-count",
+  default: null,
+})
+
+export default async function useAheuiCore() {
   const [rust, setRust] = useRecoilState(rustAtom)
   const [result, setResult] = useRecoilState(resultAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
   const [processorPosition, setProcessorPosition] = useRecoilState(
     processorPositionAtom
   )
+  const setProcessingTime = useSetRecoilState(processingTime)
+  const setRunningCount = useSetRecoilState(runningCount)
   const { cellList } = useEditor()
 
   if (!rust) {
@@ -72,10 +84,16 @@ export default async function useRust() {
 
   function startAll() {
     const newProcessor = initProcessor()
+    const startTime = window.performance.now()
+    let cmdCount = 0
     while (!newProcessor.isEnd) {
       newProcessor.run_one()
+      cmdCount++
       setProcessorPosition(newProcessor.next_position)
     }
+    const endTime = window.performance.now()
+    setProcessingTime(endTime - startTime)
+    setRunningCount(cmdCount)
     setResult(newProcessor.get_result)
   }
 

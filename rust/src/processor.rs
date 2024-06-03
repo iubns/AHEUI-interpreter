@@ -21,6 +21,8 @@ extern "C" {
     // Multiple arguments too!
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn log_many(a: &str, b: &str);
+
+    fn prompt(a: &str) -> String;
 }
 
 macro_rules! console_log {
@@ -263,38 +265,24 @@ impl Processor {
                 match cmd.third_char {
                     // O
                     21 => {
-                        let mut input: String = String::new();
-
-                        match io::stdin().read_line(&mut input) {
-                            Ok(_) => {
-                                match input.trim().parse::<i32>() {
-                                    Ok(n) => {
-                                        self.storage.push(n);
-                                    },
-                                    Err(_) => {
-                                        eprintln!("[*] {} is invalid integer.", input);
-                                        self.storage.push(0);
-                                    }
+                        loop {
+                            let input: String = prompt("숫자를 입력해주세요.");
+                            match input.trim().parse::<i32>() {
+                                Ok(n) => {
+                                    self.storage.push(n);
+                                    break;
+                                },
+                                Err(_) => {
+                                    eprintln!("[*] {} is invalid integer.", input);
+                                    self.storage.push(0);
                                 }
-                            },
-                            Err(_) => {
-                                eprintln!("[*] Cannot read a line from stdin.");
-                                self.storage.push(0);
-                            }
-                        };
+                            }   
+                        }
                     },
                     // ㅎ
                     27 => {
-                        let mut input: String = String::new();
-                        self.storage.push(match io::stdin().read_line(&mut input) {
-                            Ok(_) => {
-                                input.chars().next().unwrap() as i32
-                            },
-                            Err(_) => {
-                                eprintln!("[*] Cannot read a line from stdin.");
-                                0
-                            }
-                        });
+                        let input: String = prompt("한 글자를 입력해주세요.");
+                        self.storage.push(input.chars().next().unwrap() as i32);
                     },
                     _ => {
                         self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap())
