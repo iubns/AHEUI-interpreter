@@ -1,11 +1,9 @@
-import { useState } from "react"
-import useRust from "../hook/rust"
+import useAheuiCore from "../hook/useAheuiCore"
 
 export default function Controller() {
-  const rustHook = useRust()
+  const { startAll, startOne, initProcessor } = useAheuiCore()
 
   async function runCmd(type: string) {
-    const { startAll, startOne, initProcessor } = await rustHook
     switch (type) {
       case "one":
         startOne()

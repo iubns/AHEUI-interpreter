@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react"
-import { useRecoilValue } from "recoil"
-import { processingTime, runningCount } from "../hook/rust"
+import useAheuiCore from "../hook/useAheuiCore"
 
 export default function StatusBar() {
   const tipIndexRef = useRef(0)
   const [tipIndex, setTipIndex] = useState(0)
-  const processingTimeValue = useRecoilValue(processingTime)
-  const runningCountValue = useRecoilValue(runningCount)
+  const { runningCount, processingTime } = useAheuiCore()
 
   const tips = [
     "방향키로 이동 할 수 있습니다.",
@@ -29,10 +27,10 @@ export default function StatusBar() {
 
   return (
     <div className="flex bg-gray-800 text-xs pr-4 text-white p-1 justify-between">
-      {processingTimeValue && (
+      {processingTime && (
         <div>
           {" "}
-          {processingTimeValue.toFixed(2)}ms ({runningCountValue} cmd){" "}
+          {processingTime.toFixed(2)}ms ({runningCount} cmd){" "}
         </div>
       )}
       <div className="text-right">{tips[tipIndex]}</div>

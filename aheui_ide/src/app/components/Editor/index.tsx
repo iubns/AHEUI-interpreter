@@ -10,8 +10,8 @@ import Cell, { CellValue } from "./Cell"
 import MousePointer from "./MousePointer"
 import Position from "@/interfaces/position"
 import Cursor from "./Cursor"
-import _, { forEach } from "lodash"
-import useEditor from "@/app/hook/editor"
+import _ from "lodash"
+import useEditor from "@/app/hook/useEditor"
 import CurrentPosition from "./CurrentPosition"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }

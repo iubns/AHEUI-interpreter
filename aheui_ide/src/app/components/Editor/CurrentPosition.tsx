@@ -1,10 +1,8 @@
-import useRust, { processorPositionAtom } from "@/app/hook/rust"
-import { useEffect, useState } from "react"
-import { Position } from "../../../../public/rust/aheui_interpreter"
+import useAheuiCore from "@/app/hook/useAheuiCore"
 import { useRecoilValue } from "recoil"
 
 export default function CurrentPosition() {
-  const processorPosition = useRecoilValue(processorPositionAtom)
+  const { processorPosition } = useAheuiCore()
 
   return (
     <div

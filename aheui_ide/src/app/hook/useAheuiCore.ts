@@ -6,14 +6,14 @@ import init, {
   Position,
   Processor,
 } from "../../../public/rust/aheui_interpreter"
-import useEditor from "./editor"
+import useEditor from "./useEditor"
 
 const rustAtom = atom<InitOutput | null>({
   key: "rust-atom",
   default: null,
 })
 
-export const resultAtom = atom<String[]>({
+const outputContentAtom = atom<String[]>({
   key: "result-atom",
   default: [],
 })
@@ -23,7 +23,7 @@ const processorAtom = atom<Processor | null>({
   default: null,
 })
 
-export const processorPositionAtom = atom<Position>({
+const processorPositionAtom = atom<Position>({
   key: "processor-position",
   default: {
     x: -1,
@@ -32,33 +32,43 @@ export const processorPositionAtom = atom<Position>({
   },
 })
 
-export const processingTime = atom<number | null>({
+const processingTimeAtom = atom<number | null>({
   key: "processing-time",
   default: null,
 })
 
-export const runningCount = atom<number | null>({
+const runningCountAtom = atom<number | null>({
   key: "running-count",
   default: null,
 })
 
-export default async function useAheuiCore() {
+export default function useAheuiCore() {
   const [rust, setRust] = useRecoilState(rustAtom)
-  const [result, setResult] = useRecoilState(resultAtom)
+  const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
   const [processorPosition, setProcessorPosition] = useRecoilState(
     processorPositionAtom
   )
-  const setProcessingTime = useSetRecoilState(processingTime)
-  const setRunningCount = useSetRecoilState(runningCount)
+  const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
+  const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
   const { cellList } = useEditor()
 
+  //Todo: 여러번 호출되는 문제가 있음
   if (!rust) {
-    const initRust = await init("/rust/aheui_interpreter_bg.wasm")
-    setRust(initRust)
+    init("/rust/aheui_interpreter_bg.wasm")
+      .then((initRust) => {
+        setRust(initRust)
+      })
+      .catch(() => {
+        alert("aheui-core 로딩 실패")
+      })
   }
 
   function initProcessor() {
+    if (!rust) {
+      alert("aheui-core가 아직 로딩되지 않았습니다.")
+      return
+    }
     let maxRowSize = 0
     let maxColSize = 0
     const rsCellList = cellList
@@ -78,15 +88,16 @@ export default async function useAheuiCore() {
     const newProcessor = run_new(rsCellList, maxColSize, maxRowSize)
     setProcessor(newProcessor)
     setProcessorPosition(newProcessor.current_position)
-    setResult([])
+    setOutputContent([])
     return newProcessor
   }
 
   function startAll() {
     const newProcessor = initProcessor()
+    if (!newProcessor) return
     const startTime = window.performance.now()
     let cmdCount = 0
-    while (!newProcessor.isEnd) {
+    while (!newProcessor.is_end) {
       newProcessor.run_one()
       cmdCount++
       setProcessorPosition(newProcessor.next_position)
@@ -94,7 +105,7 @@ export default async function useAheuiCore() {
     const endTime = window.performance.now()
     setProcessingTime(endTime - startTime)
     setRunningCount(cmdCount)
-    setResult(newProcessor.get_result)
+    setOutputContent(newProcessor.get_result)
   }
 
   function startOne() {
@@ -105,8 +116,8 @@ export default async function useAheuiCore() {
     if (processor) {
       processor.run_one()
       setProcessorPosition(processor.next_position)
-      setResult(processor.get_result)
-      if (processor.isEnd) {
+      setOutputContent(processor.get_result)
+      if (processor.is_end) {
         setProcessor(null)
       }
     }
@@ -115,7 +126,10 @@ export default async function useAheuiCore() {
   return {
     startOne,
     startAll,
-    result,
+    processingTime,
+    processorPosition,
+    runningCount,
+    outputContent,
     initProcessor,
   }
 }

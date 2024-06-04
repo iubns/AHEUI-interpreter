@@ -6,7 +6,7 @@ import Editor from "./components/Editor"
 import ResultArea from "./components/ResultArea"
 import Menu from "./components/Menu"
 import StatusBar from "./components/StatusBar"
-import useRust from "./hook/rust"
+import useRust from "./hook/useAheuiCore"
 
 export default function Home() {
   const [isMoveMode, setMoveMode] = useState(false)

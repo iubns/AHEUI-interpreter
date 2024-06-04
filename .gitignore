@@ -1,10 +1,10 @@
 .vscode
 
-/aheui_interpreter/node_modules
-/aheui_interpreter/package-lock.json
+/aheui_ide/node_modules
+/aheui_ide/package-lock.json
 
 
-/rust/target
-/rust/Cargo.lock
-/rust/pkg
+/aheui_core/target
+/aheui_core/Cargo.lock
+/aheui_core/pkg
 

@@ -7,28 +7,7 @@ use crate::{
 
 #[wasm_bindgen]
 extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-
-    // The `console.log` is quite polymorphic, so we can bind it with multiple
-    // signatures. Note that we need to use `js_name` to ensure we always call
-    // `log` in JS.
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_u32(a: u32);
-
-    // Multiple arguments too!
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_many(a: &str, b: &str);
-
     fn prompt(a: &str) -> String;
-}
-
-macro_rules! console_log {
-    // Note that this is using the `log` function imported above during
-    // `bare_bones`
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
 #[wasm_bindgen]
@@ -50,7 +29,7 @@ pub struct Processor {
     pub cmd_size: Position,
     #[wasm_bindgen(skip)]
     pub way: (i8, i8, bool),
-    pub isEnd: bool,
+    pub is_end: bool,
     #[wasm_bindgen(skip)]
     pub result_list: Vec<String>,
 }
@@ -96,7 +75,7 @@ impl Processor {
                 isReverse: false,
             },
             */,
-            isEnd: false,
+            is_end: false,
             result_list: Vec::new()
         }
     }
@@ -158,7 +137,7 @@ impl Processor {
         match &cmd.command_type {
             CommandType::Exit => {
                 println!("done!");
-                self.isEnd = true;
+                self.is_end = true;
                 return;
             },
             CommandType::Add => {
