@@ -26,7 +26,7 @@ extern "C" {
 
 
 #[wasm_bindgen]
-pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Processor {
+pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) -> Processor {
     let mut processor = Processor::new();
     processor.set_cmd_size(Position {x: cmd_size_x, y: cmd_size_y});
     processor.set_command(cell_list);
@@ -34,7 +34,7 @@ pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: i8, cmd_size_y: i8) -> Pro
 }
 
 #[wasm_bindgen]
-pub fn get_cell_value(x: i8, y: i8) -> CellValue {
+pub fn get_cell_value(x: usize, y: usize) -> CellValue {
     let position = Position{
         x,
         y

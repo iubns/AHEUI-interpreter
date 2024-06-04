@@ -179,6 +179,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
         style={{
           zIndex: 0,
           position: "fixed",
+          height: 1,
           top: 0,
         }}
         onKeyDown={onKeyDown}

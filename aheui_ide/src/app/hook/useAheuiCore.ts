@@ -23,7 +23,7 @@ const processorAtom = atom<Processor | null>({
   default: null,
 })
 
-const processorPositionAtom = atom<Position>({
+const nextProcessingPositionAtom = atom<Position>({
   key: "processor-position",
   default: {
     x: -1,
@@ -46,8 +46,8 @@ export default function useAheuiCore() {
   const [rust, setRust] = useRecoilState(rustAtom)
   const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
-  const [processorPosition, setProcessorPosition] = useRecoilState(
-    processorPositionAtom
+  const [nextProcessingPosition, setNextProcessingPosition] = useRecoilState(
+    nextProcessingPositionAtom
   )
   const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
   const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
@@ -87,25 +87,37 @@ export default function useAheuiCore() {
       .sort((a, b) => a.position.y - b.position.y)
     const newProcessor = run_new(rsCellList, maxColSize, maxRowSize)
     setProcessor(newProcessor)
-    setProcessorPosition(newProcessor.current_position)
+    setNextProcessingPosition(newProcessor.current_position)
     setOutputContent([])
     return newProcessor
   }
 
-  function startAll() {
+  async function startAll() {
     const newProcessor = initProcessor()
     if (!newProcessor) return
     const startTime = window.performance.now()
     let cmdCount = 0
-    while (!newProcessor.is_end) {
-      newProcessor.run_one()
-      cmdCount++
-      setProcessorPosition(newProcessor.next_position)
+
+    function mainLoop(newProcessor: Processor) {
+      if (!newProcessor) return
+      do {
+        newProcessor.run_one()
+        cmdCount++
+      } while (!newProcessor.is_end && cmdCount % 10_000_000 !== 0)
+
+      setRunningCount(cmdCount)
+      const endTime = window.performance.now()
+      setProcessingTime(endTime - startTime)
+      setOutputContent(newProcessor.get_result)
+
+      if (!newProcessor.is_end) {
+        setTimeout(() => mainLoop(newProcessor), 0)
+        return
+      } else {
+        setOutputContent(newProcessor.get_result)
+      }
     }
-    const endTime = window.performance.now()
-    setProcessingTime(endTime - startTime)
-    setRunningCount(cmdCount)
-    setOutputContent(newProcessor.get_result)
+    mainLoop(newProcessor)
   }
 
   function startOne() {
@@ -115,7 +127,7 @@ export default function useAheuiCore() {
     }
     if (processor) {
       processor.run_one()
-      setProcessorPosition(processor.next_position)
+      setNextProcessingPosition(processor.next_position)
       setOutputContent(processor.get_result)
       if (processor.is_end) {
         setProcessor(null)
@@ -127,7 +139,7 @@ export default function useAheuiCore() {
     startOne,
     startAll,
     processingTime,
-    processorPosition,
+    nextProcessingPosition,
     runningCount,
     outputContent,
     initProcessor,

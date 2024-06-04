@@ -1,4 +1,4 @@
-use std::{any::Any, io};
+use std::{any::Any, io, usize};
 
 use wasm_bindgen::prelude::*;
 use crate::{
@@ -25,7 +25,7 @@ pub struct Processor {
     pub current_position: Position,
     pub next_position: Position,
     #[wasm_bindgen(skip)]
-    pub cmd_list: Vec<CellValue>,
+    pub cmd_list: Vec<Vec<CellValue>>,
     pub cmd_size: Position,
     #[wasm_bindgen(skip)]
     pub way: (i8, i8, bool),
@@ -36,11 +36,6 @@ pub struct Processor {
 
 #[wasm_bindgen]
 impl Processor {
-    #[wasm_bindgen(getter)]
-    pub fn cmd_list(&self) -> Vec<CellValue> {
-        self.cmd_list()
-    }
-
     #[wasm_bindgen(getter)]
     pub fn get_result(&self) -> Vec<String> {
         self.result_list.clone()
@@ -81,7 +76,24 @@ impl Processor {
     }
 
     pub fn set_command (&mut self, cell_list: Vec<CellValue>) {
-        self.cmd_list = cell_list;
+        let mut row_index = 0;
+        let mut rows = Vec::new();
+        while row_index <= self.cmd_size.y {
+            let mut col_index = 0;
+            let mut cols = Vec::new();
+            while col_index <= self.cmd_size.x {
+                match cell_list.iter().find(|cell| cell.position.x == col_index && cell.position.y == row_index) {
+                    Some(cell) => {
+                        cols.insert(col_index, *cell);
+                    },
+                    None => {}
+                }
+                col_index = col_index + 1;
+            }
+            rows.insert(row_index, cols);
+            row_index = row_index + 1;
+        }
+        self.cmd_list = rows;
     }
 
     pub fn set_cmd_size(&mut self, cmd_size: Position) {
@@ -89,16 +101,21 @@ impl Processor {
     }
 
     fn calc_next_position (&mut self) {
-        self.next_position.x = match self.current_position.x + self.way.0 {
+        self.next_position.x = match self.current_position.x as i8 + self.way.0 {
             -1 | -2 => self.cmd_size.x,
-            //self.cmd_size.x => 0,
-            _ => self.current_position.x + self.way.0,
+            _ => self.current_position.x + self.way.0 as usize,
         };
-        self.next_position.y = match self.current_position.y + self.way.1 {
+        if self.next_position.x > self.cmd_size.x {
+            self.next_position.x = 0;
+        } 
+        self.next_position.y = match self.current_position.y as i8 + self.way.1 {
             -1 | -2 => self.cmd_size.y,
-            //self.cmd_size.x => 0,
-            _ => self.current_position.y + self.way.1
+            _ => self.current_position.y + self.way.1 as usize
         };
+
+        if self.next_position.y > self.cmd_size.y {
+            self.next_position.y = 0;
+        } 
     }
 
     pub fn run_one (&mut self) {
@@ -115,13 +132,14 @@ impl Processor {
             self.current_position.y = 0;
         }
 
-        let cell_value = self.cmd_list.iter().find(|cmd| cmd.position.x == self.current_position.x && cmd.position.y == self.current_position.y);
+        let cell_value = match self.cmd_list.get(self.current_position.y) {
+            Some(row) => row.get(self.current_position.x),
+            None => None,
+        };
 
         let cmd = match cell_value {
             Some(cell) => get_command(&cell.value),
             None => {
-                self.next_position.x = self.current_position.x + self.way.0;
-                self.next_position.y = self.current_position.y + self.way.1;
                 self.calc_next_position();
                 return;
             },

@@ -3,7 +3,7 @@ import useAheuiCore from "../hook/useAheuiCore"
 export default function Controller() {
   const { startAll, startOne, initProcessor } = useAheuiCore()
 
-  async function runCmd(type: string) {
+  function runCmd(type: string) {
     switch (type) {
       case "one":
         startOne()

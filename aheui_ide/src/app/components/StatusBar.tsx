@@ -27,12 +27,14 @@ export default function StatusBar() {
 
   return (
     <div className="flex bg-gray-800 text-xs pr-4 text-white p-1 justify-between">
-      {processingTime && (
-        <div>
-          {" "}
-          {processingTime.toFixed(2)}ms ({runningCount} cmd){" "}
-        </div>
-      )}
+      <div>
+        {processingTime && (
+          <div>
+            {" "}
+            {processingTime.toFixed(2)}ms ({runningCount} cmd){" "}
+          </div>
+        )}
+      </div>
       <div className="text-right">{tips[tipIndex]}</div>
     </div>
   )
