@@ -20,6 +20,8 @@ function getIcon(menuType: MenuType) {
 }
 
 export default function Menu() {
+  const baseDomain =
+    process.env.NODE_ENV === "production" ? "/AHEUI-interpreter" : ""
   const [selectedMenu, setSelectedMenu] = useState<MenuType | null>(null)
 
   function FunctionArea() {
@@ -45,7 +47,10 @@ export default function Menu() {
               className="m-2"
               onClick={() => setSelectedMenu(value)}
             >
-              <img width="35" src={"/icons/" + getIcon(value) + ".png"} />
+              <img
+                width="35"
+                src={baseDomain + "/icons/" + getIcon(value) + ".png"}
+              />
             </div>
           )
         })}
