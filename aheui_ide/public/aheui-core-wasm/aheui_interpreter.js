@@ -139,9 +139,18 @@ function getArrayJsValueFromWasm0(ptr, len) {
     return result;
 }
 
-function getArrayI32FromWasm0(ptr, len) {
+let cachedBigInt64Memory0 = null;
+
+function getBigInt64Memory0() {
+    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.byteLength === 0) {
+        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
+    }
+    return cachedBigInt64Memory0;
+}
+
+function getArrayI64FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
-    return getInt32Memory0().subarray(ptr / 4, ptr / 4 + len);
+    return getBigInt64Memory0().subarray(ptr / 8, ptr / 8 + len);
 }
 
 function passArrayJsValueToWasm0(array, malloc) {
@@ -400,7 +409,7 @@ export class Processor {
         }
     }
     /**
-    * @returns {Int32Array}
+    * @returns {BigInt64Array}
     */
     get get_storage() {
         try {
@@ -408,8 +417,8 @@ export class Processor {
             wasm.processor_get_storage(retptr, this.__wbg_ptr);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v1 = getArrayI32FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 4, 4);
+            var v1 = getArrayI64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 8, 8);
             return v1;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
@@ -479,21 +488,21 @@ export class Storage {
         return Storage.__wrap(ret);
     }
     /**
-    * @param {number} value
+    * @param {bigint} value
     */
     push(value) {
         wasm.storage_push(this.__wbg_ptr, value);
     }
     /**
-    * @returns {number | undefined}
+    * @returns {bigint | undefined}
     */
     pop() {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.storage_pop(retptr, this.__wbg_ptr);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            return r0 === 0 ? undefined : r1;
+            var r2 = getBigInt64Memory0()[retptr / 8 + 1];
+            return r0 === 0 ? undefined : r2;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
@@ -530,7 +539,7 @@ export class Storage {
         return ret !== 0;
     }
     /**
-    * @param {number} value
+    * @param {bigint} value
     */
     revert(value) {
         wasm.storage_revert(this.__wbg_ptr, value);
@@ -620,6 +629,7 @@ function __wbg_init_memory(imports, maybe_memory) {
 function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     __wbg_init.__wbindgen_wasm_module = module;
+    cachedBigInt64Memory0 = null;
     cachedInt32Memory0 = null;
     cachedUint32Memory0 = null;
     cachedUint8Memory0 = null;

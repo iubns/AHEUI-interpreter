@@ -42,7 +42,7 @@ impl Processor {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn get_storage(&self) -> Vec<i32> {
+    pub fn get_storage(&self) -> Vec<i64> {
         self.storage.stack[0].clone()
     }
 
@@ -264,7 +264,7 @@ impl Processor {
                     21 => {
                         loop {
                             let input: String = prompt("숫자를 입력해주세요.");
-                            match input.trim().parse::<i32>() {
+                            match input.trim().parse::<i64>() {
                                 Ok(n) => {
                                     self.storage.push(n);
                                     break;
@@ -279,7 +279,7 @@ impl Processor {
                     // ㅎ
                     27 => {
                         let input: String = prompt("한 글자를 입력해주세요.");
-                        self.storage.push(input.chars().next().unwrap() as i32);
+                        self.storage.push(input.chars().next().unwrap() as i64);
                     },
                     _ => {
                         self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap())

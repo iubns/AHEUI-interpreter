@@ -65,7 +65,7 @@ export class Processor {
   readonly get_result: (string)[];
 /**
 */
-  readonly get_storage: Int32Array;
+  readonly get_storage: BigInt64Array;
 /**
 */
   is_end: boolean;
@@ -82,13 +82,13 @@ export class Storage {
 */
   static new(): Storage;
 /**
-* @param {number} value
+* @param {bigint} value
 */
-  push(value: number): void;
+  push(value: bigint): void;
 /**
-* @returns {number | undefined}
+* @returns {bigint | undefined}
 */
-  pop(): number | undefined;
+  pop(): bigint | undefined;
 /**
 */
   duplicate(): void;
@@ -109,9 +109,9 @@ export class Storage {
 */
   equal(): boolean;
 /**
-* @param {number} value
+* @param {bigint} value
 */
-  revert(value: number): void;
+  revert(value: bigint): void;
 }
 /**
 */

@@ -11,9 +11,9 @@ pub enum StorageType {
 #[derive(Clone)]
 pub struct Storage {
     #[wasm_bindgen(skip)]
-    pub stack: [Vec<i32>;26],
+    pub stack: [Vec<i64>;26],
     #[wasm_bindgen(skip)]
-    pub queue: VecDeque<i32>,
+    pub queue: VecDeque<i64>,
     #[wasm_bindgen(skip)]
     pub selected_storage: StorageType
 }
@@ -28,7 +28,7 @@ impl Storage{
         }
     }
 
-    pub fn push(&mut self, value: i32) {
+    pub fn push(&mut self, value: i64) {
         match self.selected_storage {
             StorageType::Stack(stack_mun) => {
                 self.stack[stack_mun].push(value)
@@ -39,7 +39,7 @@ impl Storage{
         }
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<i64> {
         match self.selected_storage {
             StorageType::Stack(stack_mun) => {
                 self.stack[stack_mun].pop()
@@ -169,7 +169,7 @@ impl Storage{
         true
     }
 
-    pub fn revert(&mut self, value: i32){
+    pub fn revert(&mut self, value: i64){
         match self.selected_storage {
             StorageType::Stack(stack_index) => {
                 self.stack[stack_index].push(value)
