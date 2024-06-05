@@ -57,11 +57,11 @@ jobs:
       - name: Install dependencies
         run: cd aheui_ide && npm install
       - name: Build with Next.js
-        run:  cd aheui_ide && npm run build
+        run: cd aheui_ide && npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out
+          path: ./aheui_ide/out
 
   # Deployment job
   deploy:
