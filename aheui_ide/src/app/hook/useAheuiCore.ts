@@ -5,10 +5,10 @@ import init, {
   get_cell_value,
   Position,
   Processor,
-} from "../../../public/rust/aheui_interpreter"
+} from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
 
-const rustAtom = atom<InitOutput | null>({
+const aheuiCoreAtom = atom<InitOutput | null>({
   key: "rust-atom",
   default: null,
 })
@@ -43,7 +43,7 @@ const runningCountAtom = atom<number | null>({
 })
 
 export default function useAheuiCore() {
-  const [rust, setRust] = useRecoilState(rustAtom)
+  const [aheuiCore, setAheuiCoreAtom] = useRecoilState(aheuiCoreAtom)
   const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
   const [nextProcessingPosition, setNextProcessingPosition] = useRecoilState(
@@ -54,10 +54,14 @@ export default function useAheuiCore() {
   const { cellList } = useEditor()
 
   //Todo: 여러번 호출되는 문제가 있음
-  if (!rust) {
-    init("/rust/aheui_interpreter_bg.wasm")
+  if (!aheuiCore) {
+    const aheuiCoreWasmURL =
+      process.env.NODE_ENV === "development"
+        ? "/aheui-core-wasm/aheui_interpreter_bg.wasm"
+        : "/AHEUI-interpreter/aheui-core-wasm/aheui_interpreter_bg.wasm"
+    init(aheuiCoreWasmURL)
       .then((initRust) => {
-        setRust(initRust)
+        setAheuiCoreAtom(initRust)
       })
       .catch(() => {
         alert("aheui-core 로딩 실패")
@@ -65,7 +69,7 @@ export default function useAheuiCore() {
   }
 
   function initProcessor() {
-    if (!rust) {
+    if (!aheuiCore) {
       alert("aheui-core가 아직 로딩되지 않았습니다.")
       return
     }

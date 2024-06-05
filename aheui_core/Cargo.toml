@@ -7,7 +7,7 @@ edition = "2021"
 repository = "https://github.com/iubns/AHEUI-interpreter"
 
 [package.metadata.commands]
-build = "wasm-pack build --target web  --out-dir ../aheui_ide/public/rust"
+build = "wasm-pack build --target web  --out-dir ../aheui_ide/public/aheui-core-wasm"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
