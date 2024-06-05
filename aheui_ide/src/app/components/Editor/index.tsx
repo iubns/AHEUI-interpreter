@@ -22,7 +22,7 @@ interface IProps {
 }
 
 export default function Editor({ editorHeight, isMoveMode }: IProps) {
-  const { cellList, bulkUpdate, removeCell, changeCell } = useEditor()
+  const { cellList, bulkInsert, removeCell, changeCell } = useEditor()
   const hiddenRef = useRef<HTMLInputElement>(null)
   const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 })
   const [preLength, setPreLength] = useState(0)
@@ -40,21 +40,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
   function paste(event: ClipboardEvent) {
     const paste = event.clipboardData?.getData("text")
     if (!paste) return
-
-    let tempCellList: CellValue[] = []
-    paste.split("\n").map((row, rowIndex) => {
-      for (let colIndex = 0; colIndex < row.length; colIndex++) {
-        tempCellList.push({
-          position: {
-            x: currentCursor.position.x + colIndex,
-            y: currentCursor.position.y + rowIndex,
-          },
-          value: row[colIndex],
-        })
-      }
-    })
-    bulkUpdate(tempCellList)
-    sv(v + 1)
+    bulkInsert(paste, currentCursor.position)
 
     event.preventDefault()
   }
@@ -82,7 +68,6 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
       setInputValue("")
       removeCell(currentCursor)
       setPreLength(0)
-      sv(v + 1)
       return
     }
     setInputValue(e.target.value)

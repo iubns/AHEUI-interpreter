@@ -1,7 +1,8 @@
 import { atom, useRecoilState } from "recoil"
 import { CellValue } from "../components/Editor/Cell"
 import _ from "lodash"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
+import Position from "@/interfaces/position"
 
 const cellListAtom = atom<CellValue[]>({
   key: "cell-list",
@@ -12,21 +13,42 @@ export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
   const cellListRef = useRef(cellList)
 
-  function bulkUpdate(updateCellList: CellValue[]) {
-    let tempCellList: CellValue[] = []
-    for (const cell of updateCellList) {
-      const foundCell = cellList.find(
-        (oldCell) =>
-          oldCell.position.x === cell.position.x &&
-          oldCell.position.y === cell.position.y
-      )
-      if (foundCell) {
-        foundCell.value = cell.value
-      } else {
-        tempCellList.push(cell)
+  useEffect(() => {
+    cellListRef.current = cellList
+  }, [cellList])
+
+  function bulkInsert(content: string, startPosition: Position) {
+    let insertCellList: CellValue[] = []
+    let changeCellList: CellValue[] = []
+    content.split("\n").map((row, rowIndex) => {
+      for (let colIndex = 0; colIndex < row.length; colIndex++) {
+        const foundCell = cellListRef.current.find(
+          (oldCell) =>
+            oldCell.position.x === startPosition.x + colIndex &&
+            oldCell.position.y === startPosition.y + rowIndex
+        )
+        if (foundCell) {
+          changeCellList.push({ ...foundCell, value: row[colIndex] })
+        } else {
+          insertCellList.push({
+            position: {
+              x: startPosition.x + colIndex,
+              y: startPosition.y + rowIndex,
+            },
+            value: row[colIndex],
+          })
+        }
       }
-    }
-    setCellList([...cellList, ...tempCellList])
+    })
+
+    const uniqCellList = cellListRef.current.filter((oldCell) => {
+      return !changeCellList.find(
+        (changeCell) =>
+          changeCell.position.x === oldCell.position.x &&
+          changeCell.position.y === oldCell.position.y
+      )
+    })
+    setCellList([...uniqCellList, ...insertCellList, ...changeCellList])
   }
 
   function removeCell(currentCursor: CellValue) {
@@ -51,10 +73,16 @@ export default function useEditor() {
     setCellList([...filtered, targeCell])
   }
 
+  function clearCellList() {
+    cellListRef.current = []
+    setCellList([])
+  }
+
   return {
     cellList,
     changeCell,
-    bulkUpdate,
+    bulkInsert,
+    clearCellList,
     removeCell,
   }
 }

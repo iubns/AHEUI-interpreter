@@ -1,5 +1,6 @@
-import Image from "next/image"
 import { useState } from "react"
+import example from "../lib/example"
+import useEditor from "../hook/useEditor"
 
 enum MenuType {
   파일,
@@ -28,7 +29,7 @@ export default function Menu() {
       case MenuType.저장공간:
         return <>저장공간</>
       case MenuType.예제:
-        return <>저장공간</>
+        return <ExampleList />
     }
     return <></>
   }
@@ -50,6 +51,35 @@ export default function Menu() {
         })}
       </div>
       <div>{FunctionArea()}</div>
+    </div>
+  )
+}
+
+function ExampleList() {
+  const { bulkInsert, clearCellList } = useEditor()
+
+  function setContentToEditor(content: string) {
+    clearCellList()
+    bulkInsert(content, { x: 0, y: 0 })
+  }
+
+  return (
+    <div className="flex flex-col items-start p-2">
+      <button onClick={() => setContentToEditor(example.helloWorld)}>
+        hello world
+      </button>
+      <button onClick={() => setContentToEditor(example.multiplicationTables)}>
+        구구단
+      </button>
+      <button onClick={() => setContentToEditor(example.addFrom1ToN)}>
+        1부터 N까지 더하기
+      </button>
+      <button onClick={() => setContentToEditor(example.addFrom1ToN_Fast)}>
+        1부터 N까지 더하기 (등차수열)
+      </button>
+      <button onClick={() => setContentToEditor(example.bottlesOfBeer)}>
+        99병의 맥주
+      </button>
     </div>
   )
 }
