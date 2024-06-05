@@ -1,0 +1,22 @@
+{
+  "name": "aheui_interpreter",
+  "collaborators": [
+    "iubns <iubns@naver.com>"
+  ],
+  "description": "aheui-interpreter",
+  "version": "0.1.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iubns/AHEUI-interpreter"
+  },
+  "files": [
+    "aheui_interpreter_bg.wasm",
+    "aheui_interpreter.js",
+    "aheui_interpreter.d.ts"
+  ],
+  "module": "aheui_interpreter.js",
+  "types": "aheui_interpreter.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
