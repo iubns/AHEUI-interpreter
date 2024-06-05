@@ -15,7 +15,7 @@ extern "C" {
 //Todo: way 변경하기
 pub struct Way {
     value: Position,
-    isReverse: bool
+    is_reverse: bool
 }
 
 #[wasm_bindgen]
@@ -67,7 +67,7 @@ impl Processor {
                     x: 1,
                     y: 0,
                 },
-                isReverse: false,
+                is_reverse: false,
             },
             */,
             is_end: false,
