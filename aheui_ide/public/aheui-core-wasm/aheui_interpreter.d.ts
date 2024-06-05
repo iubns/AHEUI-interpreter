@@ -139,8 +139,6 @@ export interface InitOutput {
   readonly processor_set_command: (a: number, b: number, c: number) => void;
   readonly processor_set_cmd_size: (a: number, b: number) => void;
   readonly processor_run_one: (a: number) => void;
-  readonly run_new: (a: number, b: number, c: number, d: number) => number;
-  readonly get_cell_value: (a: number, b: number) => number;
   readonly __wbg_storage_free: (a: number) => void;
   readonly storage_new: () => number;
   readonly storage_push: (a: number, b: number) => void;
@@ -161,6 +159,8 @@ export interface InitOutput {
   readonly __wbg_set_position_x: (a: number, b: number) => void;
   readonly __wbg_get_position_y: (a: number) => number;
   readonly __wbg_set_position_y: (a: number, b: number) => void;
+  readonly run_new: (a: number, b: number, c: number, d: number) => number;
+  readonly get_cell_value: (a: number, b: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
