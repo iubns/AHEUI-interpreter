@@ -30,8 +30,8 @@ export default function StatusBar() {
       <div>
         {processingTime && (
           <div>
-            {" "}
-            {processingTime.toFixed(2)}ms ({runningCount} cmd){" "}
+            {processingTime.toFixed(2)}ms (
+            {runningCount?.toLocaleString("ko-KR")} cmd)
           </div>
         )}
       </div>

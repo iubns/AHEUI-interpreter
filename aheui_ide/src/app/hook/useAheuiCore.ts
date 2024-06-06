@@ -1,4 +1,4 @@
-import { atom, useRecoilState, useSetRecoilState } from "recoil"
+import { atom, useRecoilState } from "recoil"
 import init, {
   InitOutput,
   run_new,
@@ -7,11 +7,7 @@ import init, {
   Processor,
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
-
-const aheuiCoreAtom = atom<InitOutput | null>({
-  key: "rust-atom",
-  default: null,
-})
+import { useRef } from "react"
 
 const outputContentAtom = atom<String[]>({
   key: "result-atom",
@@ -43,7 +39,7 @@ const runningCountAtom = atom<number | null>({
 })
 
 export default function useAheuiCore() {
-  const [aheuiCore, setAheuiCoreAtom] = useRecoilState(aheuiCoreAtom)
+  const aheuiCore = useRef<InitOutput | null | undefined>(undefined)
   const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
   const [nextProcessingPosition, setNextProcessingPosition] = useRecoilState(
@@ -54,23 +50,24 @@ export default function useAheuiCore() {
   const { cellList } = useEditor()
 
   //Todo: 여러번 호출되는 문제가 있음
-  if (!aheuiCore) {
+  if (aheuiCore.current === undefined) {
+    aheuiCore.current = null
     const aheuiCoreWasmURL =
       process.env.NODE_ENV === "development"
         ? "/aheui-core-wasm/aheui_interpreter_bg.wasm"
         : "/AHEUI-interpreter/aheui-core-wasm/aheui_interpreter_bg.wasm"
     init(aheuiCoreWasmURL)
       .then((initRust) => {
-        setAheuiCoreAtom(initRust)
+        aheuiCore.current = initRust
       })
       .catch(() => {
-        alert("aheui-core 로딩 실패")
+        console.error("aheui-core 로딩 실패")
       })
   }
 
   function initProcessor() {
-    if (!aheuiCore) {
-      alert("aheui-core가 아직 로딩되지 않았습니다.")
+    if (!aheuiCore.current) {
+      console.error("aheui-core가 아직 로딩되지 않았습니다.")
       return
     }
     let maxRowSize = 0
@@ -78,7 +75,8 @@ export default function useAheuiCore() {
     const rsCellList = cellList
       .map((cell) => {
         const rsCell = get_cell_value(cell.position.x, cell.position.y)
-        rsCell.value = cell.value || "ㅇ"
+        //Todo: 사실 없을 일이 없을거 같음, 확실히 확인후 ts nullable제거
+        rsCell.value = cell.value || "ㅎ"
         if (maxRowSize < cell.position.y) {
           maxRowSize = cell.position.y
         }
@@ -113,6 +111,7 @@ export default function useAheuiCore() {
       const endTime = window.performance.now()
       setProcessingTime(endTime - startTime)
       setOutputContent(newProcessor.get_result)
+      setNextProcessingPosition(newProcessor.current_position)
 
       if (!newProcessor.is_end) {
         setTimeout(() => mainLoop(newProcessor), 0)

@@ -86,8 +86,16 @@ impl Processor {
                     Some(cell) => {
                         cols.insert(col_index, *cell);
                     },
-                    None => {}
-                }
+                    None => {
+                        cols.insert(col_index, CellValue{
+                            position: Position{
+                                x: col_index,
+                                y: row_index,
+                            },
+                            value: 'o'
+                        });
+                    },
+                };
                 col_index = col_index + 1;
             }
             rows.insert(row_index, cols);
