@@ -3,10 +3,11 @@
 import { MouseEvent, useEffect, useState } from "react"
 import Controller from "./components/Controller"
 import Editor from "./components/Editor"
-import ResultArea from "./components/ResultArea"
+import ResultArea from "./components/Output"
 import Menu from "./components/Menu"
 import StatusBar from "./components/StatusBar"
 import useRust from "./hook/useAheuiCore"
+import Bottom from "./components/Bottom"
 
 export default function Home() {
   const [isMoveMode, setMoveMode] = useState(false)
@@ -68,8 +69,7 @@ export default function Home() {
             onMouseDown={onMouseDownDivider}
             className="h-2 bg-blue-800 cursor-row-resize z-30"
           />
-          <ResultArea />
-          <StatusBar />
+          <Bottom />
         </div>
       </div>
     </div>

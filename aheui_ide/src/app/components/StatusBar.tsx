@@ -8,7 +8,9 @@ export default function StatusBar() {
 
   const tips = [
     "방향키로 이동 할 수 있습니다.",
-    "F10으로 한단계 실행이 가능합니다.",
+    "입력 탭을 클릭하여 값을 미리 넣을 수 있습니다.",
+    "입력 탭의 빨간 칸은 앞으로 들어갈 값 입니다.",
+    "숫자를 요청시 글자가 들어갈 경우 재요청 합니다.",
   ]
 
   useEffect(() => {
@@ -30,8 +32,8 @@ export default function StatusBar() {
       <div>
         {processingTime && (
           <div>
-            {" "}
-            {processingTime.toFixed(2)}ms ({runningCount} cmd){" "}
+            {processingTime.toFixed(2)}ms (
+            {runningCount?.toLocaleString("ko-KR")} cmd)
           </div>
         )}
       </div>
