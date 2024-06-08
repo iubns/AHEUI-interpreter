@@ -1,10 +1,10 @@
 import useAheuiCore from "../hook/useAheuiCore"
 
-export default function ResultArea() {
+export default function Output() {
   const { outputContent } = useAheuiCore()
 
   return (
-    <div className="h-0 flex flex-col flex-grow">
+    <div className="h-0 flex flex-grow p-1">
       <div className="h-full overflow-auto">
         <pre className="text-white">{outputContent.join("")}</pre>
       </div>

@@ -4,7 +4,6 @@ import useEditor from "../hook/useEditor"
 
 enum MenuType {
   파일,
-  저장공간,
   예제,
 }
 
@@ -12,8 +11,6 @@ function getIcon(menuType: MenuType) {
   switch (menuType) {
     case MenuType.파일:
       return "file"
-    case MenuType.저장공간:
-      return "storage"
     case MenuType.예제:
       return "example"
   }
@@ -27,13 +24,19 @@ export default function Menu() {
   function FunctionArea() {
     switch (selectedMenu) {
       case MenuType.파일:
-        return <>파일</>
-      case MenuType.저장공간:
-        return <>저장공간</>
+        return <div className="p-2">파일 기능 준비중</div>
       case MenuType.예제:
         return <ExampleList />
     }
     return <></>
+  }
+
+  function onClickMenu(menuType: MenuType) {
+    if (menuType === selectedMenu) {
+      setSelectedMenu(null)
+      return
+    }
+    setSelectedMenu(menuType)
   }
 
   return (
@@ -44,8 +47,8 @@ export default function Menu() {
           return (
             <div
               key={key}
-              className="m-2"
-              onClick={() => setSelectedMenu(value)}
+              className="m-2 cursor-pointer"
+              onClick={() => onClickMenu(value)}
             >
               <img
                 width="35"
