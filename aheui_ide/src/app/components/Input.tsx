@@ -21,7 +21,6 @@ export default function Input() {
     let message =
       type === "number" ? "숫자를 입력해주세요." : "한 글자를 입력해 주세요."
     const currentData = inputDataListRef.current[inputDataOutIndex.current]
-    console.log(currentData)
     if (!currentData) {
       return prompt(message)
     }
@@ -78,7 +77,7 @@ export default function Input() {
   return (
     <div className="h-0 flex flex-grow p-1">
       <div
-        className="overflow-auto w-full flex-row flex gap-2 flex-wrap"
+        className="overflow-auto w-full flex-row flex gap-2 flex-wrap cursor-pointer"
         onClick={createNewInputData}
       >
         <input
@@ -89,7 +88,8 @@ export default function Input() {
         />
         {inputList.map((inputData, index) => (
           <div
-            className="rounded text-white border border-gray-800 flex h-8 items-center p-1"
+            className={`rounded text-white border border-gray-800 flex h-8 items-center p-1
+             ${inputDataOutIndex.current === index && "border-red-800"}`}
             onClick={(e) => editInputData(e, index)}
             key={index}
           >
