@@ -7,7 +7,7 @@ use crate::{
 
 #[wasm_bindgen]
 extern "C" {
-    fn prompt(a: &str) -> String;
+    fn getInputData(a: &str) -> String;
 }
 
 #[wasm_bindgen]
@@ -271,7 +271,7 @@ impl Processor {
                     // O
                     21 => {
                         loop {
-                            let input: String = prompt("숫자를 입력해주세요.");
+                            let input: String = getInputData("number");
                             match input.trim().parse::<i64>() {
                                 Ok(n) => {
                                     self.storage.push(n);
@@ -286,7 +286,7 @@ impl Processor {
                     },
                     // ㅎ
                     27 => {
-                        let input: String = prompt("한 글자를 입력해주세요.");
+                        let input: String = getInputData("char");
                         self.storage.push(input.chars().next().unwrap() as i64);
                     },
                     _ => {

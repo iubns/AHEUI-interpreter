@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import StatusBar from "./StatusBar"
 import Output from "./Output"
 import Input from "./Input"
+import useAheuiCore from "../hook/useAheuiCore"
 
 enum Tabs {
   output,
@@ -10,7 +11,14 @@ enum Tabs {
 }
 
 export default function Bottom() {
-  const [selectedTab, setSelectedTab] = useState(Tabs.output)
+  const { addEndProcessorHook } = useAheuiCore()
+  const [selectedTab, setSelectedTab] = useState(Tabs.input)
+
+  useEffect(() => {
+    addEndProcessorHook(() => {
+      setSelectedTab(Tabs.output)
+    })
+  }, [])
 
   function TabComponent({ tab }: { tab: Tabs }) {
     let tabName = ""
@@ -41,8 +49,8 @@ export default function Bottom() {
   return (
     <div className="flex flex-col flex-grow">
       <div className="flex gap-2">
-        <TabComponent tab={Tabs.output} />
         <TabComponent tab={Tabs.input} />
+        <TabComponent tab={Tabs.output} />
         <TabComponent tab={Tabs.storage} />
       </div>
       {selectedTab === Tabs.output && <Output />}

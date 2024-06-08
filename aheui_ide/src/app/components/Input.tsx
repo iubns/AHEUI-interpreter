@@ -1,5 +1,6 @@
-import { ChangeEvent, MouseEvent, useRef, useState } from "react"
+import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from "react"
 import { atom, useRecoilState } from "recoil"
+import useAheuiCore from "../hook/useAheuiCore"
 
 const inputListAtom = atom<string[]>({
   key: "input-list",
@@ -11,6 +12,45 @@ export default function Input() {
   const [focusIndex, setFocusIndex] = useState(0)
   const [inputValue, setInputValue] = useState("")
   const hiddenInputListRef = useRef<HTMLInputElement>(null)
+  const { addInitProcessorHook } = useAheuiCore()
+
+  const inputDataListRef = useRef<string[]>([])
+  const inputDataOutIndex = useRef(0)
+
+  function getInputData(type: "number" | "char") {
+    let message =
+      type === "number" ? "숫자를 입력해주세요." : "한 글자를 입력해 주세요."
+    const currentData = inputDataListRef.current[inputDataOutIndex.current]
+    console.log(currentData)
+    if (!currentData) {
+      return prompt(message)
+    }
+    if (type === "char") {
+      inputDataOutIndex.current++
+      return currentData
+    }
+    const data = Number.parseInt(currentData)
+    if (Number.isNaN(data)) {
+      return prompt(message)
+    }
+    inputDataOutIndex.current++
+    return data.toString()
+  }
+
+  useEffect(() => {
+    //@ts-ignore
+    if (!window.getInputData) {
+      //@ts-ignore
+      window.getInputData = getInputData
+      addInitProcessorHook(() => {
+        inputDataOutIndex.current = 0
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    inputDataListRef.current = inputList
+  }, [inputList])
 
   function createNewInputData() {
     setFocusIndex(inputList.length)

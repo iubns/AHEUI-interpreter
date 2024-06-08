@@ -38,6 +38,16 @@ const runningCountAtom = atom<number | null>({
   default: null,
 })
 
+const initProcessorHooksAtom = atom<(() => void)[]>({
+  key: "init-processor-hooks",
+  default: [],
+})
+
+const endProcessorHooksAtom = atom<(() => void)[]>({
+  key: "end-processor-hooks",
+  default: [],
+})
+
 export default function useAheuiCore() {
   const aheuiCore = useRef<InitOutput | null | undefined>(undefined)
   const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
@@ -48,6 +58,13 @@ export default function useAheuiCore() {
   const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
   const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
   const { cellList } = useEditor()
+
+  const [initProcessorHooks, setInitProcessorHooks] = useRecoilState(
+    initProcessorHooksAtom
+  )
+  const [endProcessorHooks, setEndProcessorHooks] = useRecoilState(
+    endProcessorHooksAtom
+  )
 
   //Todo: 여러번 호출되는 문제가 있음
   if (aheuiCore.current === undefined) {
@@ -91,6 +108,7 @@ export default function useAheuiCore() {
     setProcessor(newProcessor)
     setNextProcessingPosition(newProcessor.current_position)
     setOutputContent([])
+    initProcessorHooks.forEach((hook) => hook())
     return newProcessor
   }
 
@@ -138,6 +156,14 @@ export default function useAheuiCore() {
     }
   }
 
+  function addInitProcessorHook(newHook: () => void) {
+    setInitProcessorHooks([...initProcessorHooks, newHook])
+  }
+
+  function addEndProcessorHook(newHook: () => void) {
+    setEndProcessorHooks([...endProcessorHooks, newHook])
+  }
+
   return {
     startOne,
     startAll,
@@ -146,5 +172,7 @@ export default function useAheuiCore() {
     runningCount,
     outputContent,
     initProcessor,
+    addInitProcessorHook,
+    addEndProcessorHook,
   }
 }

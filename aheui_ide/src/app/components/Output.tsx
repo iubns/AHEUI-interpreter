@@ -5,7 +5,7 @@ export default function Output() {
 
   return (
     <div className="h-0 flex flex-grow p-1">
-      <div className="h-full overflow-auto">
+      <div className="h-full w-full overflow-auto">
         <pre className="text-white">{outputContent.join("")}</pre>
       </div>
     </div>
