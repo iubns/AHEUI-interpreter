@@ -33,7 +33,7 @@ const processingTimeAtom = atom<number | null>({
   default: null,
 })
 
-const runningCountAtom = atom<number | null>({
+const runningCountAtom = atom<bigint | null>({
   key: "running-count",
   default: null,
 })
@@ -116,29 +116,23 @@ export default function useAheuiCore() {
     const newProcessor = initProcessor()
     if (!newProcessor) return
     const startTime = window.performance.now()
-    let cmdCount = 0
 
-    function mainLoop(newProcessor: Processor) {
+    function mainLoop(newProcessor: Processor, cycleCount: number) {
       if (!newProcessor) return
-      do {
-        newProcessor.run_one()
-        cmdCount++
-      } while (!newProcessor.is_end && cmdCount % 10_000_000 !== 0)
+      newProcessor.run_one_cycle(cycleCount)
 
-      setRunningCount(cmdCount)
       const endTime = window.performance.now()
       setProcessingTime(endTime - startTime)
+      setRunningCount(newProcessor.cmd_processing_count)
       setOutputContent(newProcessor.get_result)
       setNextProcessingPosition(newProcessor.current_position)
 
       if (!newProcessor.is_end) {
-        setTimeout(() => mainLoop(newProcessor), 0)
+        setTimeout(() => mainLoop(newProcessor, cycleCount + 1), 0)
         return
-      } else {
-        setOutputContent(newProcessor.get_result)
       }
     }
-    mainLoop(newProcessor)
+    mainLoop(newProcessor, 0)
   }
 
   function startOne() {

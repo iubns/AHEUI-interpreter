@@ -393,6 +393,19 @@ export class Processor {
         wasm.__wbg_set_processor_is_end(this.__wbg_ptr, arg0);
     }
     /**
+    * @returns {bigint}
+    */
+    get cmd_processing_count() {
+        const ret = wasm.__wbg_get_processor_cmd_processing_count(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+    * @param {bigint} arg0
+    */
+    set cmd_processing_count(arg0) {
+        wasm.__wbg_set_processor_cmd_processing_count(this.__wbg_ptr, arg0);
+    }
+    /**
     * @returns {(string)[]}
     */
     get get_result() {
@@ -446,6 +459,12 @@ export class Processor {
         _assertClass(cmd_size, Position);
         var ptr0 = cmd_size.__destroy_into_raw();
         wasm.processor_set_cmd_size(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {number} cycle_count
+    */
+    run_one_cycle(cycle_count) {
+        wasm.processor_run_one_cycle(this.__wbg_ptr, cycle_count);
     }
     /**
     */

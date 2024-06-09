@@ -1,4 +1,4 @@
-use std::{any::Any, io, usize};
+use std::{usize};
 
 use wasm_bindgen::prelude::*;
 use crate::{
@@ -32,6 +32,7 @@ pub struct Processor {
     pub is_end: bool,
     #[wasm_bindgen(skip)]
     pub result_list: Vec<String>,
+    pub cmd_processing_count: u64,
 }
 
 #[wasm_bindgen]
@@ -71,7 +72,8 @@ impl Processor {
             },
             */,
             is_end: false,
-            result_list: Vec::new()
+            result_list: Vec::new(),
+            cmd_processing_count: 0,
         }
     }
 
@@ -92,7 +94,7 @@ impl Processor {
                                 x: col_index,
                                 y: row_index,
                             },
-                            value: 'o'
+                            value: 'o',
                         });
                     },
                 };
@@ -126,27 +128,26 @@ impl Processor {
         } 
     }
 
+    pub fn run_one_cycle (&mut self, cycle_count: i32) {
+        let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
+        while self.cmd_processing_count < cycle_max && !self.is_end {
+            self.run_one();
+            self.cmd_processing_count = self.cmd_processing_count + 1;
+        }
+    }
+
     pub fn run_one (&mut self) {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
-        
-        if self.cmd_size.x < self.current_position.x 
-        {
-            self.current_position.x = 0;
-        }
-
-        if self.cmd_size.y < self.current_position.y 
-        {
-            self.current_position.y = 0;
-        }
 
         let cell_value = match self.cmd_list.get(self.current_position.y) {
             Some(row) => row.get(self.current_position.x),
             None => None,
         };
 
+        
         let cmd = match cell_value {
-            Some(cell) => get_command(&cell.value),
+            Some(cell) =>  get_command(&cell.value),
             None => {
                 self.calc_next_position();
                 return;
@@ -158,7 +159,6 @@ impl Processor {
             (x, y, true) => (cmd.way.0 * x, cmd.way.1 * y, false),
             _ => cmd.way,
         };
-
 
         match &cmd.command_type {
             CommandType::Exit => {

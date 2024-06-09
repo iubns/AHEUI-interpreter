@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Clone, Copy)]
 pub struct CellValue {
     pub position: Position,
-    pub value: char
+    pub value: char,
 }
 
 #[wasm_bindgen]
