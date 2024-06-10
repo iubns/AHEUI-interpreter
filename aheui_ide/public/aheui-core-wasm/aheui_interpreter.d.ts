@@ -52,8 +52,15 @@ export class Processor {
 */
   set_cmd_size(cmd_size: Position): void;
 /**
+* @param {number} cycle_count
+*/
+  run_one_cycle(cycle_count: number): void;
+/**
 */
   run_one(): void;
+/**
+*/
+  cmd_processing_count: bigint;
 /**
 */
   cmd_size: Position;
@@ -65,7 +72,7 @@ export class Processor {
   readonly get_result: (string)[];
 /**
 */
-  readonly get_storage: BigInt64Array;
+  readonly get_storage: bigint;
 /**
 */
   is_end: boolean;
@@ -133,11 +140,14 @@ export interface InitOutput {
   readonly __wbg_set_processor_cmd_size: (a: number, b: number) => void;
   readonly __wbg_get_processor_is_end: (a: number) => number;
   readonly __wbg_set_processor_is_end: (a: number, b: number) => void;
+  readonly __wbg_get_processor_cmd_processing_count: (a: number) => number;
+  readonly __wbg_set_processor_cmd_processing_count: (a: number, b: number) => void;
   readonly processor_get_result: (a: number, b: number) => void;
-  readonly processor_get_storage: (a: number, b: number) => void;
+  readonly processor_get_storage: (a: number) => number;
   readonly processor_new: () => number;
   readonly processor_set_command: (a: number, b: number, c: number) => void;
   readonly processor_set_cmd_size: (a: number, b: number) => void;
+  readonly processor_run_one_cycle: (a: number, b: number) => void;
   readonly processor_run_one: (a: number) => void;
   readonly __wbg_storage_free: (a: number) => void;
   readonly storage_new: () => number;

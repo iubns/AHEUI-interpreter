@@ -22,10 +22,12 @@ pub fn get_cell_value(x: usize, y: usize) -> CellValue {
     };
     CellValue{
         position,
-        value: ' '
+        value: ' ',
+        cash_cmd: None,
     }
 }
 
+#[derive(Clone, Copy)]
 enum CommandType {
     Push,
     Pop,
@@ -43,6 +45,8 @@ enum CommandType {
     Duple,
     Exit,
 }
+
+#[derive(Clone, Copy)]
 struct Command {
     way: (i8, i8, bool),
     command_type: CommandType,

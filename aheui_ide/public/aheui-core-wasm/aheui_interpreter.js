@@ -139,20 +139,6 @@ function getArrayJsValueFromWasm0(ptr, len) {
     return result;
 }
 
-let cachedBigInt64Memory0 = null;
-
-function getBigInt64Memory0() {
-    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.byteLength === 0) {
-        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
-    }
-    return cachedBigInt64Memory0;
-}
-
-function getArrayI64FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getBigInt64Memory0().subarray(ptr / 8, ptr / 8 + len);
-}
-
 function passArrayJsValueToWasm0(array, malloc) {
     const ptr = malloc(array.length * 4, 4) >>> 0;
     const mem = getUint32Memory0();
@@ -161,6 +147,15 @@ function passArrayJsValueToWasm0(array, malloc) {
     }
     WASM_VECTOR_LEN = array.length;
     return ptr;
+}
+
+let cachedBigInt64Memory0 = null;
+
+function getBigInt64Memory0() {
+    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.byteLength === 0) {
+        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
+    }
+    return cachedBigInt64Memory0;
 }
 
 function _assertChar(c) {
@@ -393,6 +388,19 @@ export class Processor {
         wasm.__wbg_set_processor_is_end(this.__wbg_ptr, arg0);
     }
     /**
+    * @returns {bigint}
+    */
+    get cmd_processing_count() {
+        const ret = wasm.__wbg_get_processor_cmd_processing_count(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+    * @param {bigint} arg0
+    */
+    set cmd_processing_count(arg0) {
+        wasm.__wbg_set_processor_cmd_processing_count(this.__wbg_ptr, arg0);
+    }
+    /**
     * @returns {(string)[]}
     */
     get get_result() {
@@ -409,20 +417,11 @@ export class Processor {
         }
     }
     /**
-    * @returns {BigInt64Array}
+    * @returns {bigint}
     */
     get get_storage() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.processor_get_storage(retptr, this.__wbg_ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v1 = getArrayI64FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 8, 8);
-            return v1;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
+        const ret = wasm.processor_get_storage(this.__wbg_ptr);
+        return ret;
     }
     /**
     * @returns {Processor}
@@ -446,6 +445,12 @@ export class Processor {
         _assertClass(cmd_size, Position);
         var ptr0 = cmd_size.__destroy_into_raw();
         wasm.processor_set_cmd_size(this.__wbg_ptr, ptr0);
+    }
+    /**
+    * @param {number} cycle_count
+    */
+    run_one_cycle(cycle_count) {
+        wasm.processor_run_one_cycle(this.__wbg_ptr, cycle_count);
     }
     /**
     */

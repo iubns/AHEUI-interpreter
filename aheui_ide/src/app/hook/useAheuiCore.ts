@@ -7,7 +7,6 @@ import init, {
   Processor,
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
-import { useRef } from "react"
 
 const outputContentAtom = atom<String[]>({
   key: "result-atom",
@@ -33,7 +32,7 @@ const processingTimeAtom = atom<number | null>({
   default: null,
 })
 
-const runningCountAtom = atom<number | null>({
+const runningCountAtom = atom<bigint | null>({
   key: "running-count",
   default: null,
 })
@@ -48,8 +47,9 @@ const endProcessorHooksAtom = atom<(() => void)[]>({
   default: [],
 })
 
+let aheuiCore: undefined | null | InitOutput = undefined
+
 export default function useAheuiCore() {
-  const aheuiCore = useRef<InitOutput | null | undefined>(undefined)
   const [outputContent, setOutputContent] = useRecoilState(outputContentAtom)
   const [processor, setProcessor] = useRecoilState(processorAtom)
   const [nextProcessingPosition, setNextProcessingPosition] = useRecoilState(
@@ -66,24 +66,23 @@ export default function useAheuiCore() {
     endProcessorHooksAtom
   )
 
-  //Todo: 여러번 호출되는 문제가 있음
-  if (aheuiCore.current === undefined) {
-    aheuiCore.current = null
+  if (aheuiCore === undefined) {
+    aheuiCore = null
     const aheuiCoreWasmURL =
       process.env.NODE_ENV === "development"
         ? "/aheui-core-wasm/aheui_interpreter_bg.wasm"
         : "/AHEUI-interpreter/aheui-core-wasm/aheui_interpreter_bg.wasm"
     init(aheuiCoreWasmURL)
       .then((initRust) => {
-        aheuiCore.current = initRust
+        aheuiCore = initRust
       })
       .catch(() => {
-        console.error("aheui-core 로딩 실패")
+        console.log("아희 코어 로딩 실패")
       })
   }
 
   function initProcessor() {
-    if (!aheuiCore.current) {
+    if (!aheuiCore) {
       console.error("aheui-core가 아직 로딩되지 않았습니다.")
       return
     }
@@ -116,29 +115,23 @@ export default function useAheuiCore() {
     const newProcessor = initProcessor()
     if (!newProcessor) return
     const startTime = window.performance.now()
-    let cmdCount = 0
 
-    function mainLoop(newProcessor: Processor) {
+    function mainLoop(newProcessor: Processor, cycleCount: number) {
       if (!newProcessor) return
-      do {
-        newProcessor.run_one()
-        cmdCount++
-      } while (!newProcessor.is_end && cmdCount % 10_000_000 !== 0)
+      newProcessor.run_one_cycle(cycleCount)
 
-      setRunningCount(cmdCount)
       const endTime = window.performance.now()
       setProcessingTime(endTime - startTime)
+      setRunningCount(newProcessor.cmd_processing_count)
       setOutputContent(newProcessor.get_result)
       setNextProcessingPosition(newProcessor.current_position)
 
       if (!newProcessor.is_end) {
-        setTimeout(() => mainLoop(newProcessor), 0)
+        setTimeout(() => mainLoop(newProcessor, cycleCount + 1), 0)
         return
-      } else {
-        setOutputContent(newProcessor.get_result)
       }
     }
-    mainLoop(newProcessor)
+    mainLoop(newProcessor, 0)
   }
 
   function startOne() {
