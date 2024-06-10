@@ -112,21 +112,23 @@ impl Processor {
     }
 
     fn calc_next_position (&mut self) {
-        self.next_position.x = match self.current_position.x as i8 + self.way.0 {
-            -1 | -2 => self.cmd_size.x,
-            _ => self.current_position.x + self.way.0 as usize,
-        };
-        if self.next_position.x > self.cmd_size.x {
+        let next_x_position = self.current_position.x as i8 + self.way.0;
+        if next_x_position > self.cmd_size.x as i8 {
             self.next_position.x = 0;
-        } 
-        self.next_position.y = match self.current_position.y as i8 + self.way.1 {
-            -1 | -2 => self.cmd_size.y,
-            _ => self.current_position.y + self.way.1 as usize
-        };
+        } else if next_x_position < 0{
+            self.next_position.x = self.cmd_size.x;
+        } else {
+            self.next_position.x = next_x_position as usize;
+        }
 
-        if self.next_position.y > self.cmd_size.y {
+        let next_y_position = self.current_position.y as i8 + self.way.1;
+        if next_y_position > self.cmd_size.y as i8 {
             self.next_position.y = 0;
-        } 
+        } else if next_y_position < 0{
+            self.cmd_size.y = self.cmd_size.y;
+        }else {
+            self.cmd_size.y = next_y_position as usize;
+        }
     }
 
     pub fn run_one_cycle (&mut self, cycle_count: i32) {

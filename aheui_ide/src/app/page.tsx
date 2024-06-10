@@ -3,9 +3,7 @@
 import { MouseEvent, useEffect, useState } from "react"
 import Controller from "./components/Controller"
 import Editor from "./components/Editor"
-import ResultArea from "./components/Output"
 import Menu from "./components/Menu"
-import StatusBar from "./components/StatusBar"
 import useRust from "./hook/useAheuiCore"
 import Bottom from "./components/Bottom"
 
