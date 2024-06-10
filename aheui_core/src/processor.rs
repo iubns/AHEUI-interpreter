@@ -43,8 +43,8 @@ impl Processor {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn get_storage(&self) -> Vec<i64> {
-        self.storage.stack[0].clone()
+    pub fn get_storage(&self) -> i64 {
+        self.storage.fast_stack[0][0]
     }
 
     pub fn new () -> Processor {
@@ -95,7 +95,7 @@ impl Processor {
                                 y: row_index,
                             },
                             value: 'o',
-                            cashCmd: None,
+                            cash_cmd: None,
                         });
                     },
                 };
@@ -125,9 +125,9 @@ impl Processor {
         if next_y_position > self.cmd_size.y as i8 {
             self.next_position.y = 0;
         } else if next_y_position < 0{
-            self.cmd_size.y = self.cmd_size.y;
+            self.next_position.y = self.cmd_size.y;
         }else {
-            self.cmd_size.y = next_y_position as usize;
+            self.next_position.y = next_y_position as usize;
         }
     }
 
@@ -149,11 +149,11 @@ impl Processor {
         };
         
         let cmd: Command = match cell_value {
-            Some(cell) => match cell.cashCmd {
+            Some(cell) => match cell.cash_cmd {
                 Some(cmd) => cmd,
                 None => {
                     let cmd = get_command(&cell.value);
-                    cell.cashCmd = Some(cmd);
+                    cell.cash_cmd = Some(cmd);
                     cmd
                 },
             } ,

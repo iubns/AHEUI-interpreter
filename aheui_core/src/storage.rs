@@ -15,23 +15,36 @@ pub struct Storage {
     #[wasm_bindgen(skip)]
     pub queue: VecDeque<i64>,
     #[wasm_bindgen(skip)]
-    pub selected_storage: StorageType
+    pub selected_storage: StorageType,
+    #[wasm_bindgen(skip)]
+    pub fast_stack: [[i64; 1000]; 26],
+    #[wasm_bindgen(skip)]
+    pub fast_stack_pointer: [usize; 26],
 }
 
+const CASH_STORAGE_SIZE: usize = 1000;
 #[wasm_bindgen]
 impl Storage{
+
     pub fn new () -> Storage {
         Storage{
             stack: Default::default(),
             queue: Default::default(),
-            selected_storage: StorageType::Stack(0)
+            selected_storage: StorageType::Stack(0),
+            fast_stack: [[0; CASH_STORAGE_SIZE]; 26],
+            fast_stack_pointer: [0; 26],
         }
     }
 
     pub fn push(&mut self, value: i64) {
         match self.selected_storage {
             StorageType::Stack(stack_mun) => {
-                self.stack[stack_mun].push(value)
+                if self.fast_stack_pointer[stack_mun] < CASH_STORAGE_SIZE {
+                    self.fast_stack[stack_mun][self.fast_stack_pointer[stack_mun]] = value;
+                    self.fast_stack_pointer[stack_mun] = self.fast_stack_pointer[stack_mun] + 1;
+                } else {
+                    self.stack[stack_mun].push(value)
+                }
             },
             StorageType::Queue => {
                 self.queue.push_back(value)
@@ -42,7 +55,16 @@ impl Storage{
     pub fn pop(&mut self) -> Option<i64> {
         match self.selected_storage {
             StorageType::Stack(stack_mun) => {
-                self.stack[stack_mun].pop()
+                if self.stack[stack_mun].len() > 0 {
+                    return self.stack[stack_mun].pop();
+                }
+                if self.fast_stack_pointer[stack_mun] == 0 {
+                    return None;
+                }
+                    
+                self.fast_stack_pointer[stack_mun] = self.fast_stack_pointer[stack_mun] - 1;
+                let value = self.fast_stack[stack_mun][self.fast_stack_pointer[stack_mun]];
+                Some(value)
             },
             StorageType::Queue => {
                 self.queue.pop_front()
@@ -52,13 +74,13 @@ impl Storage{
 
     pub fn duplicate(&mut self) {
         match self.selected_storage {
-            StorageType::Stack(stack_number) => {
-                let last_value = match self.stack[stack_number].pop() {
+            StorageType::Stack(_) => {
+                let last_value = match self.pop() {
                     Some(value) => value,
                     None => 0
                 }; 
-                self.stack[stack_number].push(last_value);
-                self.stack[stack_number].push(last_value);
+                self.push(last_value);
+                self.push(last_value);
             },
             StorageType::Queue => {
                 match self.queue.front() {
@@ -73,20 +95,20 @@ impl Storage{
 
     pub fn swap(&mut self){
         match self.selected_storage {
-            StorageType::Stack(stack_number) => {
-                let first = match self.stack[stack_number].pop() {
+            StorageType::Stack(_) => {
+                let first = match self.pop() {
                     Some(value) => value,
                     None => return
                 };
-                let second = match self.stack[stack_number].pop() {
+                let second = match self.pop() {
                     Some(value) => value,
                     None => {
-                        self.stack[stack_number].push(first);
+                        self.push(first);
                         return;
                     }
                 };
-                self.stack[stack_number].push(first);
-                self.stack[stack_number].push(second);
+                self.push(first);
+                self.push(second);
             },
             StorageType::Queue => {
                 let first = match self.queue.pop_front() {
@@ -126,7 +148,7 @@ impl Storage{
     pub fn move_value(&mut self, value: usize) -> bool{
         let current_storage_value_option = match self.selected_storage {
             StorageType::Queue => self.queue.pop_front(),
-            StorageType::Stack(stack_index) => self.stack[stack_index].pop()
+            StorageType::Stack(_) => self.pop()
         };
 
         let current_storage_value = match current_storage_value_option {
@@ -141,8 +163,13 @@ impl Storage{
             27 => {
                 panic!("통로는 구현 예정입니다.")
             }
-            stack_index => {
-                self.stack[stack_index].push(current_storage_value)
+            stack_mun => {
+                if self.fast_stack_pointer[stack_mun] < CASH_STORAGE_SIZE {
+                    self.fast_stack[stack_mun][self.fast_stack_pointer[stack_mun]] = current_storage_value;
+                    self.fast_stack_pointer[stack_mun] = self.fast_stack_pointer[stack_mun] + 1;
+                } else {
+                    self.stack[stack_mun].push(current_storage_value)
+                }
             }
         }
         return  true;
@@ -171,8 +198,8 @@ impl Storage{
 
     pub fn revert(&mut self, value: i64){
         match self.selected_storage {
-            StorageType::Stack(stack_index) => {
-                self.stack[stack_index].push(value)
+            StorageType::Stack(_) => {
+                self.push(value)
             },
             StorageType::Queue => {
                 self.queue.push_front(value)

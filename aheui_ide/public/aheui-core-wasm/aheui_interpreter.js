@@ -139,6 +139,16 @@ function getArrayJsValueFromWasm0(ptr, len) {
     return result;
 }
 
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    const mem = getUint32Memory0();
+    for (let i = 0; i < array.length; i++) {
+        mem[ptr / 4 + i] = addHeapObject(array[i]);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
 let cachedBigInt64Memory0 = null;
 
 function getBigInt64Memory0() {
@@ -148,19 +158,8 @@ function getBigInt64Memory0() {
     return cachedBigInt64Memory0;
 }
 
-function getArrayI64FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getBigInt64Memory0().subarray(ptr / 8, ptr / 8 + len);
-}
-
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    const mem = getUint32Memory0();
-    for (let i = 0; i < array.length; i++) {
-        mem[ptr / 4 + i] = addHeapObject(array[i]);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
+function _assertChar(c) {
+    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
 }
 /**
 * @param {(CellValue)[]} cell_list
@@ -183,10 +182,6 @@ export function run_new(cell_list, cmd_size_x, cmd_size_y) {
 export function get_cell_value(x, y) {
     const ret = wasm.get_cell_value(x, y);
     return CellValue.__wrap(ret);
-}
-
-function _assertChar(c) {
-    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
 }
 
 const CellValueFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -422,20 +417,11 @@ export class Processor {
         }
     }
     /**
-    * @returns {BigInt64Array}
+    * @returns {bigint}
     */
     get get_storage() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.processor_get_storage(retptr, this.__wbg_ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v1 = getArrayI64FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 8, 8);
-            return v1;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
+        const ret = wasm.processor_get_storage(this.__wbg_ptr);
+        return ret;
     }
     /**
     * @returns {Processor}
