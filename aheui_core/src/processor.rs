@@ -1,8 +1,8 @@
-use std::{usize};
+use std::{cell, usize};
 
 use wasm_bindgen::prelude::*;
 use crate::{
-    cell::{CellValue, Position}, get_command, get_line_count, revert_way, storage::{self, Storage}, CommandType 
+    cell::{CellValue, Position}, get_command, get_line_count, revert_way, storage::{self, Storage}, Command, CommandType 
 };
 
 #[wasm_bindgen]
@@ -95,6 +95,7 @@ impl Processor {
                                 y: row_index,
                             },
                             value: 'o',
+                            cashCmd: None,
                         });
                     },
                 };
@@ -139,15 +140,21 @@ impl Processor {
     pub fn run_one (&mut self) {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
-
-        let cell_value = match self.cmd_list.get(self.current_position.y) {
-            Some(row) => row.get(self.current_position.x),
+        
+        let cell_value: Option<&mut CellValue> = match self.cmd_list.get_mut(self.current_position.y) {
+            Some(row) => row.get_mut(self.current_position.x),
             None => None,
         };
-
         
-        let cmd = match cell_value {
-            Some(cell) =>  get_command(&cell.value),
+        let cmd: Command = match cell_value {
+            Some(cell) => match cell.cashCmd {
+                Some(cmd) => cmd,
+                None => {
+                    let cmd = get_command(&cell.value);
+                    cell.cashCmd = Some(cmd);
+                    cmd
+                },
+            } ,
             None => {
                 self.calc_next_position();
                 return;
@@ -162,180 +169,24 @@ impl Processor {
 
         match &cmd.command_type {
             CommandType::Exit => {
-                println!("done!");
                 self.is_end = true;
                 return;
             },
-            CommandType::Add => {
-                let first = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                let second = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.storage.revert(first);
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                self.storage.push(first + second);
-            },
-            CommandType::Sub => {
-                let first = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                let second = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.storage.revert(first);
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                self.storage.push(second - first);
-            },
-            CommandType::Mul => {
-                let first = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                let second = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.storage.revert(first);
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                self.storage.push(first * second);
-            },
-            CommandType::Div => {
-                let first = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                let second = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.storage.revert(first);
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                self.storage.push(second / first);
-            },
-            CommandType::Mod => {
-                let first = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.calc_next_position();
-                        revert_way(&mut self.way);
-                        return;
-                    }
-                };
-                let second = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        self.storage.revert(first);
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                self.storage.push(second % first);
-            },
-            CommandType::Push => {
-                match cmd.third_char {
-                    // O
-                    21 => {
-                        loop {
-                            let input: String = getInputData("number");
-                            match input.trim().parse::<i64>() {
-                                Ok(n) => {
-                                    self.storage.push(n);
-                                    break;
-                                },
-                                Err(_) => {
-                                    eprintln!("[*] {} is invalid integer.", input);
-                                    self.storage.push(0);
-                                }
-                            }   
-                        }
-                    },
-                    // ㅎ
-                    27 => {
-                        let input: String = getInputData("char");
-                        self.storage.push(input.chars().next().unwrap() as i64);
-                    },
-                    _ => {
-                        self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap())
-                    }
-                }
-            },
-            CommandType::Duple => {
-                self.storage.duplicate()
-            },
-            CommandType::Pop => {
-                let value = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                match cmd.third_char {
-                    27 => {
-                        self.result_list.push(std::char::from_u32(value as u32).unwrap().to_string());
-                    },
-                    21 => {
-                        self.result_list.push(value.to_string());
-                    }
-                    _ => {}
-                }
-            },
-            CommandType::Swap => {
-                self.storage.swap()
-            }
-            CommandType::Select => {
-                self.storage.select(cmd.third_char)
-            }
+            CommandType::Add => self.add(),
+            CommandType::Sub => self.sub(),
+            CommandType::Mul => self.mul(),
+            CommandType::Div => self.div(),
+            CommandType::Mod => self.remainder(),
+            CommandType::Push => self.push(cmd),
+            CommandType::Duple => self.storage.duplicate(),
+            CommandType::Pop => self.pop(cmd),
+            CommandType::Swap => self.storage.swap(),
+            CommandType::Select => self.storage.select(cmd.third_char),
             CommandType::Move => {
                 let has_value = self.storage.move_value(cmd.third_char as usize);
                 if !has_value {revert_way(&mut self.way)}
             }
-            CommandType::Condition => {
-                let target_value = match self.storage.pop() {
-                    Some(value) => value,
-                    None => {
-                        revert_way(&mut self.way);
-                        return;
-                    }
-                };
-                if target_value == 0 {revert_way(&mut self.way)};
-            }
+            CommandType::Condition => self.condition(),
             CommandType::Equal => {
                 if self.storage.equal() == false {
                     revert_way(&mut self.way);
@@ -345,6 +196,163 @@ impl Processor {
                 print!("형태는 구현이 필요함")
             },
         }
+        
         self.calc_next_position();
+    }
+
+    fn add(&mut self) {
+        let first = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        let second = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                self.storage.revert(first);
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        self.storage.push(first + second);
+    }
+
+    fn sub (&mut self) {
+        let first = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        let second = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                self.storage.revert(first);
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        self.storage.push(second - first);
+    }
+
+    fn mul (&mut self) {
+        let first = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        let second = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                self.storage.revert(first);
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        self.storage.push(first * second);
+    }
+
+    fn div (&mut self) {
+        let first = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        let second = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                self.storage.revert(first);
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        self.storage.push(second / first);
+    }
+
+    fn remainder (&mut self) {
+        let first = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        let second = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                self.storage.revert(first);
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        self.storage.push(second % first);
+    }
+
+    fn push (&mut self, cmd: Command) {
+        match cmd.third_char {
+            // O
+            21 => {
+                loop {
+                    let input: String = getInputData("number");
+                    match input.trim().parse::<i64>() {
+                        Ok(n) => {
+                            self.storage.push(n);
+                            break;
+                        },
+                        Err(_) => {
+                            eprintln!("[*] {} is invalid integer.", input);
+                            self.storage.push(0);
+                        }
+                    }   
+                }
+            },
+            // ㅎ
+            27 => {
+                let input: String = getInputData("char");
+                self.storage.push(input.chars().next().unwrap() as i64);
+            },
+            _ => {
+                self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap())
+            }
+        }
+    }
+
+    fn pop (&mut self, cmd: Command) { 
+        let value = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        match cmd.third_char {
+            27 => {
+                self.result_list.push(std::char::from_u32(value as u32).unwrap().to_string());
+            },
+            21 => {
+                self.result_list.push(value.to_string());
+            }
+            _ => {}
+        }
+    }
+
+    fn condition (&mut self) {
+        let target_value = match self.storage.pop() {
+            Some(value) => value,
+            None => {
+                revert_way(&mut self.way);
+                return;
+            }
+        };
+        if target_value == 0 {
+            revert_way(&mut self.way)
+        };
     }
 }

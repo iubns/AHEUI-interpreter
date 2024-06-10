@@ -162,10 +162,6 @@ function passArrayJsValueToWasm0(array, malloc) {
     WASM_VECTOR_LEN = array.length;
     return ptr;
 }
-
-function _assertChar(c) {
-    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
-}
 /**
 * @param {(CellValue)[]} cell_list
 * @param {number} cmd_size_x
@@ -187,6 +183,10 @@ export function run_new(cell_list, cmd_size_x, cmd_size_y) {
 export function get_cell_value(x, y) {
     const ret = wasm.get_cell_value(x, y);
     return CellValue.__wrap(ret);
+}
+
+function _assertChar(c) {
+    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
 }
 
 const CellValueFinalization = (typeof FinalizationRegistry === 'undefined')

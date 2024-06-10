@@ -139,7 +139,7 @@ impl Storage{
                 self.queue.push_back(current_storage_value)
             }
             27 => {
-                panic!("통로는 구현 예저입니다.")
+                panic!("통로는 구현 예정입니다.")
             }
             stack_index => {
                 self.stack[stack_index].push(current_storage_value)

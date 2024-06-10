@@ -23,6 +23,7 @@ pub fn get_cell_value(x: usize, y: usize) -> CellValue {
     CellValue{
         position,
         value: ' ',
+        cashCmd: None,
     }
 }
 
