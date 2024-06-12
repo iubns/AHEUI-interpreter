@@ -1,4 +1,4 @@
-use std::{cell, usize};
+use std::{usize};
 
 use wasm_bindgen::prelude::*;
 use crate::{
@@ -33,6 +33,7 @@ pub struct Processor {
     #[wasm_bindgen(skip)]
     pub result_list: Vec<String>,
     pub cmd_processing_count: u64,
+    pub selected_stack_storage_for_js: usize,
 }
 
 #[wasm_bindgen]
@@ -43,8 +44,22 @@ impl Processor {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn get_storage(&self) -> i64 {
-        self.storage.fast_stack[0][0]
+    pub fn get_stack_storage(&self) -> Vec<i64> {
+        if self.selected_stack_storage_for_js >= 26 {
+            return vec![];
+        }
+        self.storage.stack[self.selected_stack_storage_for_js].clone()
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_selected_stack_num(&mut self, stack_num: usize) {
+        self.selected_stack_storage_for_js = stack_num
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn get_queue_storage(&self) -> Vec<i64> {
+        let vec: Vec<i64>= self.storage.queue.clone().into();
+        return vec;
     }
 
     pub fn new () -> Processor {
@@ -74,6 +89,7 @@ impl Processor {
             is_end: false,
             result_list: Vec::new(),
             cmd_processing_count: 0,
+            selected_stack_storage_for_js: 0,
         }
     }
 
@@ -169,7 +185,7 @@ impl Processor {
             _ => cmd.way,
         };
 
-        match &cmd.command_type {
+        match cmd.command_type {
             CommandType::Exit => {
                 self.is_end = true;
                 return;

@@ -47,6 +47,11 @@ const endProcessorHooksAtom = atom<(() => void)[]>({
   default: [],
 })
 
+const storageAtom = atom<Array<BigInt64Array>>({
+  key: "storage",
+  default: [],
+})
+
 let aheuiCore: undefined | null | InitOutput = undefined
 
 export default function useAheuiCore() {
@@ -57,6 +62,7 @@ export default function useAheuiCore() {
   )
   const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
   const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
+  const [storageList, setStorage] = useRecoilState(storageAtom)
   const { cellList } = useEditor()
 
   const [initProcessorHooks, setInitProcessorHooks] = useRecoilState(
@@ -146,6 +152,13 @@ export default function useAheuiCore() {
       if (processor.is_end) {
         setProcessor(null)
       }
+      let tempStorage: Array<BigInt64Array> = []
+      tempStorage.push(processor.get_queue_storage)
+      for (let index = 0; index <= 26; index++) {
+        processor.selected_stack_storage_for_js = index
+        tempStorage.push(processor.get_stack_storage)
+      }
+      setStorage(tempStorage)
     }
   }
 
@@ -164,6 +177,7 @@ export default function useAheuiCore() {
     nextProcessingPosition,
     runningCount,
     outputContent,
+    storageList,
     initProcessor,
     addInitProcessorHook,
     addEndProcessorHook,
