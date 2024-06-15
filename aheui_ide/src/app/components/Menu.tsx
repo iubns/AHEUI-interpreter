@@ -88,6 +88,9 @@ function ExampleList() {
       <button onClick={() => setContentToEditor(example.bottlesOfBeer)}>
         99병의 맥주
       </button>
+      <button onClick={() => setContentToEditor(example.factorization)}>
+        소인수 분해
+      </button>
     </div>
   )
 }

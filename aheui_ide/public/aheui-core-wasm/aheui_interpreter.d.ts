@@ -72,13 +72,19 @@ export class Processor {
   readonly get_result: (string)[];
 /**
 */
-  readonly get_storage: bigint;
+  readonly get_storage: BigInt64Array;
 /**
 */
   is_end: boolean;
 /**
 */
   next_position: Position;
+/**
+*/
+  selected_storage_for_js: number;
+/**
+*/
+  selected_storage_num: number;
 }
 /**
 */
@@ -142,13 +148,16 @@ export interface InitOutput {
   readonly __wbg_set_processor_is_end: (a: number, b: number) => void;
   readonly __wbg_get_processor_cmd_processing_count: (a: number) => number;
   readonly __wbg_set_processor_cmd_processing_count: (a: number, b: number) => void;
+  readonly __wbg_get_processor_selected_storage_for_js: (a: number) => number;
+  readonly __wbg_set_processor_selected_storage_for_js: (a: number, b: number) => void;
   readonly processor_get_result: (a: number, b: number) => void;
-  readonly processor_get_storage: (a: number) => number;
+  readonly processor_get_storage: (a: number, b: number) => void;
   readonly processor_new: () => number;
   readonly processor_set_command: (a: number, b: number, c: number) => void;
   readonly processor_set_cmd_size: (a: number, b: number) => void;
   readonly processor_run_one_cycle: (a: number, b: number) => void;
   readonly processor_run_one: (a: number) => void;
+  readonly processor_set_selected_storage_num: (a: number, b: number) => void;
   readonly __wbg_storage_free: (a: number) => void;
   readonly storage_new: () => number;
   readonly storage_push: (a: number, b: number) => void;

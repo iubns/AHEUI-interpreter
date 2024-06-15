@@ -3,6 +3,7 @@ import StatusBar from "./StatusBar"
 import Output from "./Output"
 import Input from "./Input"
 import useAheuiCore from "../hook/useAheuiCore"
+import Storage from "./Storage"
 
 enum Tabs {
   output,
@@ -55,6 +56,7 @@ export default function Bottom() {
       </div>
       {selectedTab === Tabs.output && <Output />}
       {selectedTab === Tabs.input && <Input />}
+      {selectedTab === Tabs.storage && <Storage />}
       <StatusBar />
     </div>
   )

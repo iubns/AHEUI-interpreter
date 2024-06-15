@@ -139,6 +139,20 @@ function getArrayJsValueFromWasm0(ptr, len) {
     return result;
 }
 
+let cachedBigInt64Memory0 = null;
+
+function getBigInt64Memory0() {
+    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.byteLength === 0) {
+        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
+    }
+    return cachedBigInt64Memory0;
+}
+
+function getArrayI64FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getBigInt64Memory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
 function passArrayJsValueToWasm0(array, malloc) {
     const ptr = malloc(array.length * 4, 4) >>> 0;
     const mem = getUint32Memory0();
@@ -147,15 +161,6 @@ function passArrayJsValueToWasm0(array, malloc) {
     }
     WASM_VECTOR_LEN = array.length;
     return ptr;
-}
-
-let cachedBigInt64Memory0 = null;
-
-function getBigInt64Memory0() {
-    if (cachedBigInt64Memory0 === null || cachedBigInt64Memory0.byteLength === 0) {
-        cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);
-    }
-    return cachedBigInt64Memory0;
 }
 
 function _assertChar(c) {
@@ -401,6 +406,19 @@ export class Processor {
         wasm.__wbg_set_processor_cmd_processing_count(this.__wbg_ptr, arg0);
     }
     /**
+    * @returns {number}
+    */
+    get selected_storage_for_js() {
+        const ret = wasm.__wbg_get_processor_selected_storage_for_js(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+    * @param {number} arg0
+    */
+    set selected_storage_for_js(arg0) {
+        wasm.__wbg_set_processor_selected_storage_for_js(this.__wbg_ptr, arg0);
+    }
+    /**
     * @returns {(string)[]}
     */
     get get_result() {
@@ -417,11 +435,26 @@ export class Processor {
         }
     }
     /**
-    * @returns {bigint}
+    * @returns {BigInt64Array}
     */
     get get_storage() {
-        const ret = wasm.processor_get_storage(this.__wbg_ptr);
-        return ret;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.processor_get_storage(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var v1 = getArrayI64FromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 8, 8);
+            return v1;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+    * @param {number} stack_num
+    */
+    set selected_storage_num(stack_num) {
+        wasm.__wbg_set_processor_selected_storage_for_js(this.__wbg_ptr, stack_num);
     }
     /**
     * @returns {Processor}

@@ -1,4 +1,4 @@
-use std::{cell, usize};
+use std::{usize};
 
 use wasm_bindgen::prelude::*;
 use crate::{
@@ -28,11 +28,12 @@ pub struct Processor {
     pub cmd_list: Vec<Vec<CellValue>>,
     pub cmd_size: Position,
     #[wasm_bindgen(skip)]
-    pub way: (i8, i8, bool),
+    pub way: (i16, i16, bool),
     pub is_end: bool,
     #[wasm_bindgen(skip)]
     pub result_list: Vec<String>,
     pub cmd_processing_count: u64,
+    pub selected_storage_for_js: usize,
 }
 
 #[wasm_bindgen]
@@ -43,8 +44,20 @@ impl Processor {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn get_storage(&self) -> i64 {
-        self.storage.fast_stack[0][0]
+    pub fn get_storage(&self) -> Vec<i64> {
+        if self.selected_storage_for_js >= 27 {
+            return vec![];
+        }
+        if self.selected_storage_for_js == 21 {
+            let vec: Vec<i64>= self.storage.queue.clone().into();
+            return vec;
+        }
+        self.storage.stack[self.selected_storage_for_js].clone()
+    }
+
+    #[wasm_bindgen(setter)]
+    pub fn set_selected_storage_num(&mut self, stack_num: usize) {
+        self.selected_storage_for_js = stack_num
     }
 
     pub fn new () -> Processor {
@@ -74,6 +87,7 @@ impl Processor {
             is_end: false,
             result_list: Vec::new(),
             cmd_processing_count: 0,
+            selected_storage_for_js: 0,
         }
     }
 
@@ -112,8 +126,8 @@ impl Processor {
     }
 
     fn calc_next_position (&mut self) {
-        let next_x_position = self.current_position.x as i8 + self.way.0;
-        if next_x_position > self.cmd_size.x as i8 {
+        let next_x_position = self.current_position.x as i16 + self.way.0;
+        if next_x_position > self.cmd_size.x as i16 {
             self.next_position.x = 0;
         } else if next_x_position < 0{
             self.next_position.x = self.cmd_size.x;
@@ -121,8 +135,8 @@ impl Processor {
             self.next_position.x = next_x_position as usize;
         }
 
-        let next_y_position = self.current_position.y as i8 + self.way.1;
-        if next_y_position > self.cmd_size.y as i8 {
+        let next_y_position = self.current_position.y as i16 + self.way.1;
+        if next_y_position > self.cmd_size.y as i16 {
             self.next_position.y = 0;
         } else if next_y_position < 0{
             self.next_position.y = self.cmd_size.y;
@@ -169,7 +183,7 @@ impl Processor {
             _ => cmd.way,
         };
 
-        match &cmd.command_type {
+        match cmd.command_type {
             CommandType::Exit => {
                 self.is_end = true;
                 return;
@@ -193,7 +207,8 @@ impl Processor {
                 if self.storage.equal() == false {
                     revert_way(&mut self.way);
                 }
-            }
+            },
+            CommandType::None => (),
             _ => {
                 print!("형태는 구현이 필요함")
             },

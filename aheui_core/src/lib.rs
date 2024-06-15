@@ -14,6 +14,23 @@ pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) 
     return processor;
 }
 
+pub fn create_processor_from_string (content: &str) -> Processor{
+    let parsed_content = parse(content);
+    let mut max_col = 0;
+    let mut cell_list = Vec::new();
+    for (row_index, row) in parsed_content.iter().enumerate() {
+        for (col_index, cell_char) in row.iter().enumerate() {
+            let mut cell = get_cell_value(col_index, row_index);
+            cell.value = *cell_char;
+            cell_list.push(cell);
+        }
+        if max_col < row.len() {
+            max_col = row.len();
+        }
+    }
+    run_new(cell_list, max_col, parsed_content.len())
+}
+
 #[wasm_bindgen]
 pub fn get_cell_value(x: usize, y: usize) -> CellValue {
     let position = Position{
@@ -48,7 +65,7 @@ enum CommandType {
 
 #[derive(Clone, Copy)]
 struct Command {
-    way: (i8, i8, bool),
+    way: (i16, i16, bool),
     command_type: CommandType,
     third_char: u32,
 }
@@ -93,7 +110,7 @@ fn get_line_count (third_char: &u32) -> usize {
     }
 }
 
-fn get_move_way(second_char: &u32) -> (i8, i8, bool){
+fn get_move_way(second_char: &u32) -> (i16, i16, bool){
     match second_char {
         0 => (1, 0, false), // ㅏ
         2 => (2, 0, false),// ㅑ
@@ -143,7 +160,7 @@ fn get_command(char: &char) -> Command {
     return  Command{command_type, way, third_char};
 }
 
-fn revert_way(way: &mut (i8, i8, bool)){
+fn revert_way(way: &mut (i16, i16, bool)){
     way.0 = way.0 * -1;
     way.1 = way.1 * -1;
 }
