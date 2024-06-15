@@ -11,7 +11,7 @@ pub enum StorageType {
 #[derive(Clone)]
 pub struct Storage {
     #[wasm_bindgen(skip)]
-    pub stack: [Vec<i64>;26],
+    pub stack: [Vec<i64>;27],
     #[wasm_bindgen(skip)]
     pub queue: VecDeque<i64>,
     #[wasm_bindgen(skip)]

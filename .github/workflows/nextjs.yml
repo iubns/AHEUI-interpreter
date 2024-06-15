@@ -54,6 +54,8 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
+      - name: aheui-core test
+        run: cd aheui_core && cargo test
       - name: Install dependencies
         run: cd aheui_ide && npm install
       - name: Build with Next.js

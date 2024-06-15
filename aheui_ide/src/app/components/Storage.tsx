@@ -24,6 +24,7 @@ export default function Storage() {
     "앖",
     "앗",
     "았",
+    "앙",
     "앚",
     "앛",
     "앜",
@@ -36,16 +37,9 @@ export default function Storage() {
     <div className="h-0 flex flex-grow p-1">
       <div className="h-full w-full overflow-auto flex flex-col text-white p-1">
         {storageList.map((storage, index) => {
-          if (index === 0) {
-            return (
-              <div className=" border-spacing-0" key={index}>
-                양: {storage.toString()}
-              </div>
-            )
-          }
           return (
             <div className=" border-slate-900" key={index}>
-              {storageNames[index - 1]}: {storage.toString()}
+              {storageNames[index]}: {storage.toString()}
             </div>
           )
         })}

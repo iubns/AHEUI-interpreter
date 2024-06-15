@@ -162,6 +162,10 @@ function passArrayJsValueToWasm0(array, malloc) {
     WASM_VECTOR_LEN = array.length;
     return ptr;
 }
+
+function _assertChar(c) {
+    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
+}
 /**
 * @param {(CellValue)[]} cell_list
 * @param {number} cmd_size_x
@@ -183,10 +187,6 @@ export function run_new(cell_list, cmd_size_x, cmd_size_y) {
 export function get_cell_value(x, y) {
     const ret = wasm.get_cell_value(x, y);
     return CellValue.__wrap(ret);
-}
-
-function _assertChar(c) {
-    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
 }
 
 const CellValueFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -408,15 +408,15 @@ export class Processor {
     /**
     * @returns {number}
     */
-    get selected_stack_storage_for_js() {
-        const ret = wasm.__wbg_get_processor_selected_stack_storage_for_js(this.__wbg_ptr);
+    get selected_storage_for_js() {
+        const ret = wasm.__wbg_get_processor_selected_storage_for_js(this.__wbg_ptr);
         return ret >>> 0;
     }
     /**
     * @param {number} arg0
     */
-    set selected_stack_storage_for_js(arg0) {
-        wasm.__wbg_set_processor_selected_stack_storage_for_js(this.__wbg_ptr, arg0);
+    set selected_storage_for_js(arg0) {
+        wasm.__wbg_set_processor_selected_storage_for_js(this.__wbg_ptr, arg0);
     }
     /**
     * @returns {(string)[]}
@@ -437,10 +437,10 @@ export class Processor {
     /**
     * @returns {BigInt64Array}
     */
-    get get_stack_storage() {
+    get get_storage() {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.processor_get_stack_storage(retptr, this.__wbg_ptr);
+            wasm.processor_get_storage(retptr, this.__wbg_ptr);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             var v1 = getArrayI64FromWasm0(r0, r1).slice();
@@ -453,24 +453,8 @@ export class Processor {
     /**
     * @param {number} stack_num
     */
-    set selected_stack_num(stack_num) {
-        wasm.__wbg_set_processor_selected_stack_storage_for_js(this.__wbg_ptr, stack_num);
-    }
-    /**
-    * @returns {BigInt64Array}
-    */
-    get get_queue_storage() {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.processor_get_queue_storage(retptr, this.__wbg_ptr);
-            var r0 = getInt32Memory0()[retptr / 4 + 0];
-            var r1 = getInt32Memory0()[retptr / 4 + 1];
-            var v1 = getArrayI64FromWasm0(r0, r1).slice();
-            wasm.__wbindgen_free(r0, r1 * 8, 8);
-            return v1;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
+    set selected_storage_num(stack_num) {
+        wasm.__wbg_set_processor_selected_storage_for_js(this.__wbg_ptr, stack_num);
     }
     /**
     * @returns {Processor}

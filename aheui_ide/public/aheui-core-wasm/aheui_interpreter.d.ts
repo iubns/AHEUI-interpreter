@@ -69,13 +69,10 @@ export class Processor {
   current_position: Position;
 /**
 */
-  readonly get_queue_storage: BigInt64Array;
-/**
-*/
   readonly get_result: (string)[];
 /**
 */
-  readonly get_stack_storage: BigInt64Array;
+  readonly get_storage: BigInt64Array;
 /**
 */
   is_end: boolean;
@@ -84,10 +81,10 @@ export class Processor {
   next_position: Position;
 /**
 */
-  selected_stack_num: number;
+  selected_storage_for_js: number;
 /**
 */
-  selected_stack_storage_for_js: number;
+  selected_storage_num: number;
 }
 /**
 */
@@ -151,19 +148,16 @@ export interface InitOutput {
   readonly __wbg_set_processor_is_end: (a: number, b: number) => void;
   readonly __wbg_get_processor_cmd_processing_count: (a: number) => number;
   readonly __wbg_set_processor_cmd_processing_count: (a: number, b: number) => void;
-  readonly __wbg_get_processor_selected_stack_storage_for_js: (a: number) => number;
-  readonly __wbg_set_processor_selected_stack_storage_for_js: (a: number, b: number) => void;
+  readonly __wbg_get_processor_selected_storage_for_js: (a: number) => number;
+  readonly __wbg_set_processor_selected_storage_for_js: (a: number, b: number) => void;
   readonly processor_get_result: (a: number, b: number) => void;
-  readonly processor_get_stack_storage: (a: number, b: number) => void;
-  readonly processor_get_queue_storage: (a: number, b: number) => void;
+  readonly processor_get_storage: (a: number, b: number) => void;
   readonly processor_new: () => number;
   readonly processor_set_command: (a: number, b: number, c: number) => void;
   readonly processor_set_cmd_size: (a: number, b: number) => void;
   readonly processor_run_one_cycle: (a: number, b: number) => void;
   readonly processor_run_one: (a: number) => void;
-  readonly processor_set_selected_stack_num: (a: number, b: number) => void;
-  readonly run_new: (a: number, b: number, c: number, d: number) => number;
-  readonly get_cell_value: (a: number, b: number) => number;
+  readonly processor_set_selected_storage_num: (a: number, b: number) => void;
   readonly __wbg_storage_free: (a: number) => void;
   readonly storage_new: () => number;
   readonly storage_push: (a: number, b: number) => void;
@@ -184,6 +178,8 @@ export interface InitOutput {
   readonly __wbg_set_position_x: (a: number, b: number) => void;
   readonly __wbg_get_position_y: (a: number) => number;
   readonly __wbg_set_position_y: (a: number, b: number) => void;
+  readonly run_new: (a: number, b: number, c: number, d: number) => number;
+  readonly get_cell_value: (a: number, b: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

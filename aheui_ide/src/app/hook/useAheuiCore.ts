@@ -94,25 +94,23 @@ export default function useAheuiCore() {
     }
     let maxRowSize = 0
     let maxColSize = 0
-    const rsCellList = cellList
-      .map((cell) => {
-        const rsCell = get_cell_value(cell.position.x, cell.position.y)
-        //Todo: 사실 없을 일이 없을거 같음, 확실히 확인후 ts nullable제거
-        rsCell.value = cell.value || "ㅎ"
-        if (maxRowSize < cell.position.y) {
-          maxRowSize = cell.position.y
-        }
-        if (maxColSize < cell.position.x) {
-          maxColSize = cell.position.x
-        }
-        return rsCell
-      })
-      .sort((a, b) => a.position.x - b.position.x)
-      .sort((a, b) => a.position.y - b.position.y)
+    const rsCellList = cellList.map((cell) => {
+      const rsCell = get_cell_value(cell.position.x, cell.position.y)
+      //Todo: 사실 없을 일이 없을거 같음, 확실히 확인후 ts nullable제거
+      rsCell.value = cell.value || "ㅎ"
+      if (maxRowSize < cell.position.y) {
+        maxRowSize = cell.position.y
+      }
+      if (maxColSize < cell.position.x) {
+        maxColSize = cell.position.x
+      }
+      return rsCell
+    })
     const newProcessor = run_new(rsCellList, maxColSize, maxRowSize)
     setProcessor(newProcessor)
     setNextProcessingPosition(newProcessor.current_position)
     setOutputContent([])
+    setStorage(new Array(28).fill(""))
     initProcessorHooks.forEach((hook) => hook())
     return newProcessor
   }
@@ -136,6 +134,7 @@ export default function useAheuiCore() {
         setTimeout(() => mainLoop(newProcessor, cycleCount + 1), 0)
         return
       }
+      getStorageDataFromProcessor(newProcessor)
     }
     mainLoop(newProcessor, 0)
   }
@@ -152,14 +151,17 @@ export default function useAheuiCore() {
       if (processor.is_end) {
         setProcessor(null)
       }
-      let tempStorage: Array<BigInt64Array> = []
-      tempStorage.push(processor.get_queue_storage)
-      for (let index = 0; index <= 26; index++) {
-        processor.selected_stack_storage_for_js = index
-        tempStorage.push(processor.get_stack_storage)
-      }
-      setStorage(tempStorage)
+      getStorageDataFromProcessor(processor)
     }
+  }
+
+  function getStorageDataFromProcessor(processor: Processor) {
+    let tempStorage: Array<BigInt64Array> = []
+    for (let index = 0; index <= 27; index++) {
+      processor.selected_storage_for_js = index
+      tempStorage.push(processor.get_storage)
+    }
+    setStorage(tempStorage)
   }
 
   function addInitProcessorHook(newHook: () => void) {
