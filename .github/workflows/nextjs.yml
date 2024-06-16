@@ -57,7 +57,7 @@ jobs:
       - name: aheui-core test
         run: cd aheui_core && cargo test
       - name: aheui-core build
-        run: cd aheui_core && cargo cmd build
+        run: cd aheui_core && wasm-pack build --target web  --out-dir ../aheui_ide/public/aheui-core-wasm
       - name: Install dependencies
         run: cd aheui_ide && npm install
       - name: Build with Next.js
