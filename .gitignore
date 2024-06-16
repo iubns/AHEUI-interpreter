@@ -2,6 +2,7 @@
 
 /aheui_ide/node_modules
 /aheui_ide/package-lock.json
+/aheui_ide/public/aheui-core-wasm/*
 
 
 /aheui_core/target
