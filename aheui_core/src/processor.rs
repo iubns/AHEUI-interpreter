@@ -5,16 +5,12 @@ use crate::{
     cell::{ CellValue, Position },
     get_command,
     get_line_count,
+    input_receiver::{ self, InputReceiver },
     revert_way,
     storage::{ self, Storage },
     Command,
     CommandType,
 };
-
-#[wasm_bindgen]
-extern "C" {
-    fn getInputData(a: &str) -> String;
-}
 
 #[wasm_bindgen]
 #[derive(Copy, Clone)]
@@ -40,6 +36,8 @@ pub struct Processor {
     pub result_list: Vec<String>,
     pub cmd_processing_count: u64,
     pub selected_storage_for_js: usize,
+    #[wasm_bindgen(skip)]
+    pub input_receiver: input_receiver::InputReceiver,
 }
 
 #[wasm_bindgen]
@@ -94,6 +92,7 @@ impl Processor {
             result_list: Vec::new(),
             cmd_processing_count: 0,
             selected_storage_for_js: 0,
+            input_receiver: InputReceiver::new(),
         }
     }
 
@@ -340,7 +339,7 @@ impl Processor {
             // O
             21 => {
                 loop {
-                    let input: String = getInputData("number");
+                    let input: String = self.input_receiver.get_next_data("number");
                     match input.trim().parse::<i64>() {
                         Ok(n) => {
                             self.storage.push(n);
@@ -355,7 +354,7 @@ impl Processor {
             }
             // ㅎ
             27 => {
-                let input: String = getInputData("char");
+                let input: String = self.input_receiver.get_next_data("char");
                 self.storage.push(input.chars().next().unwrap() as i64);
             }
             _ => { self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap()) }

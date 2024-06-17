@@ -90,7 +90,7 @@ impl Storage {
                 let second = match self.queue.pop_front() {
                     Some(value) => value,
                     None => {
-                        self.queue.push_back(first);
+                        self.queue.push_front(first);
                         return;
                     }
                 };

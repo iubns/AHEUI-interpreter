@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::{ fs, path::Path };
 
-    use aheui_interpreter::{ create_processor_from_string };
+    use aheui_interpreter::create_processor_from_string;
 
     //Todo: 두가지 방법중에 무엇이 더 나은가?
     fn execute_test(test_name: &str, has_input: bool) {
@@ -22,8 +20,18 @@ mod tests {
         };
         let mut processor = create_processor_from_string(&aheui_cmd);
         let mut cycle_count = 1;
+
+        if has_input {
+            let aheui_input = match fs::read_to_string(format!("./tests/example/{}.in", test_name)) {
+                Ok(v) => v,
+                Err(_) => {
+                    panic!();
+                }
+            };
+            processor.input_receiver.set_test_input_date(aheui_input);
+        }
+
         loop {
-            println!("{} 테스트 {}번째 실행중", test_name, cycle_count);
             processor.run_one_cycle(cycle_count);
             cycle_count += 1;
             if processor.is_end {
@@ -34,6 +42,7 @@ mod tests {
         let result = processor.result_list;
 
         assert_eq!(aheui_out, result.join(""));
+        println!("{} 테스트 통과", test_name);
     }
 
     #[test]
@@ -74,10 +83,16 @@ mod tests {
                     }
                 };
 
-                println!("{} 테스트 실행", test_name);
-
                 let mut processor = create_processor_from_string(&aheui_cmd);
                 let mut cycle_count = 1;
+
+                match fs::read_to_string(format!("./tests/example/{}.in", test_name)) {
+                    Ok(aheui_input) => {
+                        processor.input_receiver.set_test_input_date(aheui_input);
+                    }
+                    Err(_) => (),
+                }
+
                 loop {
                     println!("{} 테스트 {}번째 실행중", test_name, cycle_count);
                     processor.run_one_cycle(cycle_count);
@@ -110,5 +125,10 @@ mod tests {
     #[test]
     fn bottle_test() {
         execute_test("99bottles", false);
+    }
+
+    #[test]
+    fn factorial_test() {
+        execute_test("factorial", true);
     }
 }
