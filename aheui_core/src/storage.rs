@@ -61,42 +61,44 @@ impl Storage {
         }
     }
 
-    pub fn swap(&mut self) {
+    pub fn swap(&mut self) -> bool {
         match self.selected_storage {
             StorageType::Stack(_) => {
                 let first = match self.pop() {
                     Some(value) => value,
                     None => {
-                        return;
+                        return false;
                     }
                 };
                 let second = match self.pop() {
                     Some(value) => value,
                     None => {
                         self.push(first);
-                        return;
+                        return false;
                     }
                 };
                 self.push(first);
                 self.push(second);
+                true
             }
             StorageType::Queue => {
                 let first = match self.queue.pop_front() {
                     Some(value) => value,
                     None => {
-                        return;
+                        return false;
                     }
                 };
                 let second = match self.queue.pop_front() {
                     Some(value) => value,
                     None => {
                         self.queue.push_front(first);
-                        return;
+                        return false;
                     }
                 };
 
                 self.queue.push_front(first);
                 self.queue.push_front(second);
+                true
             }
         }
     }

@@ -80,7 +80,7 @@ impl Processor {
                 x: 0,
                 y: 0,
             },
-            way: (1, 0, false) /* Way{
+            way: (0, 1, false) /* Way{
                 value: Position{
                     x: 1,
                     y: 0,
@@ -216,7 +216,11 @@ impl Processor {
             CommandType::Push => self.push(cmd),
             CommandType::Duple => self.storage.duplicate(),
             CommandType::Pop => self.pop(cmd),
-            CommandType::Swap => self.storage.swap(),
+            CommandType::Swap => {
+                if !self.storage.swap() {
+                    revert_way(&mut self.way);
+                }
+            }
             CommandType::Select => self.storage.select(cmd.third_char),
             CommandType::Move => {
                 let has_value = self.storage.move_value(cmd.third_char as usize);
