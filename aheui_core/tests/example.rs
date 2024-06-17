@@ -133,7 +133,7 @@ mod tests {
     }
 
     #[test]
-    fn queue_test() {
-        execute_test("queue", false);
+    fn n2e63_test() {
+        execute_test("n2e63", false);
     }
 }

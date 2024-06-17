@@ -32,6 +32,8 @@ impl InputReceiver {
         return value.clone();
     }
 
+    //Todo: 입력 숫자와 글자를 어떻게 구분 할 것인가?
+    //test: bieup  / bieup-char  테스트 입력 조작함, 스페이스 없어야 함.
     pub fn set_test_input_date(&mut self, content: String) {
         self.is_test = true;
         let rows = content.split("\n");
