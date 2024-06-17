@@ -56,11 +56,11 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: aheui-core test
         run: cd aheui_core && cargo test
-      - name: aheui-core wasm-pack install
+      - name: Install dependencies for aheui-core
         run: cd aheui_core && cargo install wasm-pack
       - name: aheui-core build
         run: cd aheui_core && wasm-pack build --target web  --out-dir ../aheui_ide/public/aheui-core-wasm
-      - name: Install dependencies
+      - name: Install dependencies for React
         run: cd aheui_ide && npm install
       - name: Build with Next.js
         run: cd aheui_ide && npm run build

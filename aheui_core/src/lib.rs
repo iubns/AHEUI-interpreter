@@ -144,20 +144,21 @@ fn parse(content: & str) -> Vec<Vec<char>>{
     content_array
 }
 
-fn get_command(char: &char) -> Command {
+fn get_command(char: &char) -> Option<Command> {
     let unicode = *char as u32;
     
+    if unicode < 0xAC00 {
+        return  None;
+    }
+
     let first_char = (unicode - 0xAC00) / (21 * 28) ;
     let second_char = (unicode - 0xAC00) % (21 * 28) / 28 ;
     let third_char = (unicode - 0xAC00) % 28 ;
     
-    let command_type = match unicode > 0xAC00 {
-        true => get_command_type(&first_char),
-        false => CommandType::None,
-    }; 
+    let command_type = get_command_type(&first_char); 
     let way = get_move_way(&second_char);
 
-    return  Command{command_type, way, third_char};
+    return  Some(Command{command_type, way, third_char});
 }
 
 fn revert_way(way: &mut (i16, i16, bool)){
