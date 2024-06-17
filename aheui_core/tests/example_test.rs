@@ -44,7 +44,7 @@ mod example_test {
     }
 
     #[test]
-    fn example_test() {
+    fn example_all_test() {
         let path = Path::new("./tests/example");
         if let Ok(entries) = fs::read_dir(path) {
             for entry in entries {
@@ -116,7 +116,7 @@ mod example_test {
     }
 
     #[test]
-    fn add1_to_n_speed_test() {
+    fn add_1_to_n_speed_test() {
         execute_test("add1ToN", true);
     }
 
