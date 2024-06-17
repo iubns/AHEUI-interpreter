@@ -5,16 +5,12 @@ use crate::{
     cell::{ CellValue, Position },
     get_command,
     get_line_count,
+    input_receiver::{ self, InputReceiver },
     revert_way,
     storage::{ self, Storage },
     Command,
     CommandType,
 };
-
-#[wasm_bindgen]
-extern "C" {
-    fn getInputData(a: &str) -> String;
-}
 
 #[wasm_bindgen]
 #[derive(Copy, Clone)]
@@ -40,6 +36,8 @@ pub struct Processor {
     pub result_list: Vec<String>,
     pub cmd_processing_count: u64,
     pub selected_storage_for_js: usize,
+    #[wasm_bindgen(skip)]
+    pub input_receiver: input_receiver::InputReceiver,
 }
 
 #[wasm_bindgen]
@@ -82,7 +80,7 @@ impl Processor {
                 x: 0,
                 y: 0,
             },
-            way: (1, 0, false) /* Way{
+            way: (0, 1, false) /* Way{
                 value: Position{
                     x: 1,
                     y: 0,
@@ -94,6 +92,7 @@ impl Processor {
             result_list: Vec::new(),
             cmd_processing_count: 0,
             selected_storage_for_js: 0,
+            input_receiver: InputReceiver::new(),
         }
     }
 
@@ -200,7 +199,7 @@ impl Processor {
 
         self.way = match cmd.way {
             (0, 0, false) => self.way,
-            (x, y, true) => (cmd.way.0 * x, cmd.way.1 * y, false),
+            (x, y, true) => (self.way.0 * x, self.way.1 * y, false),
             _ => cmd.way,
         };
 
@@ -215,9 +214,19 @@ impl Processor {
             CommandType::Div => self.div(),
             CommandType::Mod => self.remainder(),
             CommandType::Push => self.push(cmd),
-            CommandType::Duple => self.storage.duplicate(),
+            CommandType::Duple => {
+                let has_value = self.storage.duplicate();
+                if !has_value {
+                    revert_way(&mut self.way);
+                }
+            }
             CommandType::Pop => self.pop(cmd),
-            CommandType::Swap => self.storage.swap(),
+            CommandType::Swap => {
+                let has_value = self.storage.swap();
+                if !has_value {
+                    revert_way(&mut self.way);
+                }
+            }
             CommandType::Select => self.storage.select(cmd.third_char),
             CommandType::Move => {
                 let has_value = self.storage.move_value(cmd.third_char as usize);
@@ -256,7 +265,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(first + second);
+        self.storage.push(first.overflowing_add(second).0);
     }
 
     fn sub(&mut self) {
@@ -275,7 +284,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(second - first);
+        self.storage.push(second.overflowing_sub(first).0);
     }
 
     fn mul(&mut self) {
@@ -294,7 +303,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(first * second);
+        self.storage.push(first.overflowing_mul(second).0);
     }
 
     fn div(&mut self) {
@@ -340,7 +349,7 @@ impl Processor {
             // O
             21 => {
                 loop {
-                    let input: String = getInputData("number");
+                    let input: String = self.input_receiver.get_next_data("number");
                     match input.trim().parse::<i64>() {
                         Ok(n) => {
                             self.storage.push(n);
@@ -355,7 +364,7 @@ impl Processor {
             }
             // ㅎ
             27 => {
-                let input: String = getInputData("char");
+                let input: String = self.input_receiver.get_next_data("char");
                 self.storage.push(input.chars().next().unwrap() as i64);
             }
             _ => { self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap()) }

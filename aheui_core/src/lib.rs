@@ -2,9 +2,10 @@ use wasm_bindgen::prelude::*;
 use processor::Processor;
 use cell::{ CellValue, Position };
 
+pub mod cell;
 pub mod storage;
 pub mod processor;
-pub mod cell;
+pub mod input_receiver;
 
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) -> Processor {
