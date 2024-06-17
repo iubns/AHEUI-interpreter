@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use processor::Processor;
-use cell::{CellValue, Position};
+use cell::{ CellValue, Position };
 
 pub mod storage;
 pub mod processor;
@@ -9,12 +9,12 @@ pub mod cell;
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) -> Processor {
     let mut processor = Processor::new();
-    processor.set_cmd_size(Position {x: cmd_size_x, y: cmd_size_y});
+    processor.set_cmd_size(Position { x: cmd_size_x, y: cmd_size_y });
     processor.set_command(cell_list);
     return processor;
 }
 
-pub fn create_processor_from_string (content: &str) -> Processor{
+pub fn create_processor_from_string(content: &str) -> Processor {
     let parsed_content = parse(content);
     let mut max_col = 0;
     let mut cell_list = Vec::new();
@@ -33,11 +33,11 @@ pub fn create_processor_from_string (content: &str) -> Processor{
 
 #[wasm_bindgen]
 pub fn get_cell_value(x: usize, y: usize) -> CellValue {
-    let position = Position{
+    let position = Position {
         x,
-        y
+        y,
     };
-    CellValue{
+    CellValue {
         position,
         value: ' ',
         cash_cmd: None,
@@ -70,7 +70,6 @@ struct Command {
     third_char: u32,
 }
 
-
 fn get_command_type(first_char: &u32) -> CommandType {
     match first_char {
         0 | 1 | 15 => CommandType::None, //ㄱ ㄲ ㅋ
@@ -94,74 +93,92 @@ fn get_command_type(first_char: &u32) -> CommandType {
 }
 
 //없음, 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
-fn get_line_count (third_char: &u32) -> usize {
+fn get_line_count(third_char: &u32) -> usize {
     match third_char {
-        0 | 27 => return 0,
-        21 => return 1,
-        1 | 4 | 19 => return  2,
-        7 | 22 | 24 => return 3,
-        2 | 3 | 16 | 17 | 20 | 23 | 25 | 26 => return 4,
-        5 | 6 | 8 => return 5,
-        18 => return 6,
-        9 | 12 => return 7,
-        15 => return 8,
-        10 | 11 | 13 | 14  => return 9,
+        0 | 27 => {
+            return 0;
+        }
+        21 => {
+            return 1;
+        }
+        1 | 4 | 19 => {
+            return 2;
+        }
+        7 | 22 | 24 => {
+            return 3;
+        }
+        2 | 3 | 16 | 17 | 20 | 23 | 25 | 26 => {
+            return 4;
+        }
+        5 | 6 | 8 => {
+            return 5;
+        }
+        18 => {
+            return 6;
+        }
+        9 | 12 => {
+            return 7;
+        }
+        15 => {
+            return 8;
+        }
+        10 | 11 | 13 | 14 => {
+            return 9;
+        }
         _ => panic!("정의가 필요한 종성이 있음 : {}", third_char),
     }
 }
 
-fn get_move_way(second_char: &u32) -> (i16, i16, bool){
+fn get_move_way(second_char: &u32) -> (i16, i16, bool) {
     match second_char {
         0 => (1, 0, false), // ㅏ
-        2 => (2, 0, false),// ㅑ
-        4 => (-1, 0, false),// ㅓ
-        6 => (-2, 0, false),// ㅕ
-        8 => (0, -1, false),// ㅗ
-        12 => (0, -2, false),// ㅛ
-        13 => (0, 1, false),// ㅜ
-        17 => (0, 2, false),// ㅠ
+        2 => (2, 0, false), // ㅑ
+        4 => (-1, 0, false), // ㅓ
+        6 => (-2, 0, false), // ㅕ
+        8 => (0, -1, false), // ㅗ
+        12 => (0, -2, false), // ㅛ
+        13 => (0, 1, false), // ㅜ
+        17 => (0, 2, false), // ㅠ
 
-        18 => (1, -1, true),// ㅡ
+        18 => (1, -1, true), // ㅡ
         19 => (-1, -1, true), // ㅢ
-        20 => (-1, 1, true),// ㅣ
-        
-        _ => (0, 0, false),// 기타
+        20 => (-1, 1, true), // ㅣ
+
+        _ => (0, 0, false), // 기타
     }
 }
 
-
-fn parse(content: & str) -> Vec<Vec<char>>{
- let mut content_array = Vec::new();
+fn parse(content: &str) -> Vec<Vec<char>> {
+    let mut content_array = Vec::new();
     let lines = content.split('\n');
     for line in lines {
         let mut line_array = Vec::new();
-        for c in line.chars()
-        {
+        for c in line.chars() {
             line_array.push(c);
-        };
+        }
         content_array.push(line_array);
-    };
+    }
     content_array
 }
 
 fn get_command(char: &char) -> Option<Command> {
     let unicode = *char as u32;
-    
-    if unicode < 0xAC00 {
-        return  None;
+
+    if unicode < 0xac00 {
+        return None;
     }
 
-    let first_char = (unicode - 0xAC00) / (21 * 28) ;
-    let second_char = (unicode - 0xAC00) % (21 * 28) / 28 ;
-    let third_char = (unicode - 0xAC00) % 28 ;
-    
-    let command_type = get_command_type(&first_char); 
+    let first_char = (unicode - 0xac00) / (21 * 28);
+    let second_char = ((unicode - 0xac00) % (21 * 28)) / 28;
+    let third_char = (unicode - 0xac00) % 28;
+
+    let command_type = get_command_type(&first_char);
     let way = get_move_way(&second_char);
 
-    return  Some(Command{command_type, way, third_char});
+    return Some(Command { command_type, way, third_char });
 }
 
-fn revert_way(way: &mut (i16, i16, bool)){
+fn revert_way(way: &mut (i16, i16, bool)) {
     way.0 = way.0 * -1;
     way.1 = way.1 * -1;
 }
