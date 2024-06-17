@@ -42,21 +42,29 @@ impl Storage {
         }
     }
 
-    pub fn duplicate(&mut self) {
+    pub fn duplicate(&mut self) -> bool {
         match self.selected_storage {
             StorageType::Stack(_) => {
                 let last_value = match self.pop() {
                     Some(value) => value,
-                    None => 0,
+                    None => {
+                        return false;
+                    }
                 };
                 self.push(last_value);
                 self.push(last_value);
+                true
             }
             StorageType::Queue => {
                 match self.queue.front() {
-                    Some(value) => { self.queue.push_front(*value) }
-                    None => {}
+                    Some(value) => {
+                        self.queue.push_front(*value);
+                    }
+                    None => {
+                        return false;
+                    }
                 }
+                true
             }
         }
     }

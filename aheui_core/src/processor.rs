@@ -214,10 +214,16 @@ impl Processor {
             CommandType::Div => self.div(),
             CommandType::Mod => self.remainder(),
             CommandType::Push => self.push(cmd),
-            CommandType::Duple => self.storage.duplicate(),
+            CommandType::Duple => {
+                let has_value = self.storage.duplicate();
+                if !has_value {
+                    revert_way(&mut self.way);
+                }
+            }
             CommandType::Pop => self.pop(cmd),
             CommandType::Swap => {
-                if !self.storage.swap() {
+                let has_value = self.storage.swap();
+                if !has_value {
                     revert_way(&mut self.way);
                 }
             }
@@ -259,7 +265,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(first + second);
+        self.storage.push(first.overflowing_add(second).0);
     }
 
     fn sub(&mut self) {
@@ -278,7 +284,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(second - first);
+        self.storage.push(second.overflowing_sub(first).0);
     }
 
     fn mul(&mut self) {
@@ -297,7 +303,7 @@ impl Processor {
                 return;
             }
         };
-        self.storage.push(first * second);
+        self.storage.push(first.overflowing_mul(second).0);
     }
 
     fn div(&mut self) {

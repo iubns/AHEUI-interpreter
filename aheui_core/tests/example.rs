@@ -42,7 +42,6 @@ mod tests {
         let result = processor.result_list;
 
         assert_eq!(aheui_out, result.join(""));
-        println!("{} 테스트 통과", test_name);
     }
 
     #[test]
