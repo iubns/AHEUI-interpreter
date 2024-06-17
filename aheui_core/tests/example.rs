@@ -1,38 +1,39 @@
 #[cfg(test)]
-mod lib_test {
+mod tests {
+    use super::*;
+
     use std::{ fs, path::Path };
 
     use aheui_interpreter::{ create_processor_from_string };
 
+    //Todo: 두가지 방법중에 무엇이 더 나은가?
     fn execute_test(test_name: &str, has_input: bool) {
         let aheui_cmd = match fs::read_to_string(format!("./tests/example/{}.aheui", test_name)) {
             Ok(v) => v,
-            Err(e) => {
-                return;
+            Err(_) => {
+                panic!();
             }
         };
         let aheui_out = match fs::read_to_string(format!("./tests/example/{}.out", test_name)) {
             Ok(v) => v,
-            Err(e) => {
-                return;
+            Err(_) => {
+                panic!();
             }
         };
         let mut processor = create_processor_from_string(&aheui_cmd);
-        processor.run_one_cycle(1);
+        let mut cycle_count = 1;
+        loop {
+            println!("{} 테스트 {}번째 실행중", test_name, cycle_count);
+            processor.run_one_cycle(cycle_count);
+            cycle_count += 1;
+            if processor.is_end {
+                break;
+            }
+        }
+
         let result = processor.result_list;
 
         assert_eq!(aheui_out, result.join(""));
-    }
-
-    #[test]
-    fn hello_world_test() {
-        let test_word =
-            "밤밣따빠밣밟따뿌\n빠맣파빨받밤뚜뭏\n돋밬탕빠맣붏두붇\n볻뫃박발뚷투뭏붖\n뫃도뫃희멓뭏뭏붘\n뫃봌토범더벌뿌뚜\n뽑뽀멓멓더벓뻐뚠\n뽀덩벐멓뻐덕더벅";
-        let mut processor = create_processor_from_string(&test_word);
-        processor.run_one_cycle(1);
-        let result = processor.result_list;
-
-        assert_eq!(result.join(""), "Hello, world!\n");
     }
 
     #[test]
@@ -42,14 +43,14 @@ mod lib_test {
             for entry in entries {
                 let entry = match entry {
                     Ok(v) => v,
-                    Err(e) => {
-                        continue;
+                    Err(_) => {
+                        panic!();
                     }
                 };
 
                 match entry.path().extension() {
                     None => {
-                        continue;
+                        panic!();
                     }
                     Some(v) => {
                         if v != "aheui" {
@@ -59,42 +60,51 @@ mod lib_test {
                 }
 
                 let path = entry.path();
-                let file_name = match (&path).file_stem() {
-                    None => {
-                        continue;
-                    }
+                let test_name = match path.file_stem().and_then(|v| v.to_str()) {
                     Some(v) => v,
-                };
-
-                let test_name = match file_name.to_str() {
-                    Some(file_na) => file_na,
                     None => {
-                        continue;
+                        panic!();
                     }
                 };
 
                 let aheui_cmd = match fs::read_to_string(&path) {
                     Ok(v) => v,
-                    Err(e) => {
-                        continue;
-                    }
-                };
-
-                let mut processor = create_processor_from_string(&aheui_cmd);
-                processor.run_one_cycle(1);
-                let result = processor.result_list;
-
-                let aheui_out = match fs::read_to_string(format!("{}.out", test_name)) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        continue;
+                    Err(_) => {
+                        panic!();
                     }
                 };
 
                 println!("{} 테스트 실행", test_name);
+
+                let mut processor = create_processor_from_string(&aheui_cmd);
+                let mut cycle_count = 1;
+                loop {
+                    println!("{} 테스트 {}번째 실행중", test_name, cycle_count);
+                    processor.run_one_cycle(cycle_count);
+                    cycle_count += 1;
+                    if processor.is_end {
+                        break;
+                    }
+                }
+                let result = processor.result_list;
+
+                let aheui_out = match
+                    fs::read_to_string(format!("./tests/example/{}.out", test_name))
+                {
+                    Ok(v) => v,
+                    Err(_) => {
+                        panic!();
+                    }
+                };
+
                 assert_eq!(aheui_out, result.join(""));
             }
         }
+    }
+
+    #[test]
+    fn hello_world_test() {
+        execute_test("hello-world.puzzlet", false);
     }
 
     #[test]
