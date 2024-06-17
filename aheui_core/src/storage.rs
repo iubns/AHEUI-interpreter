@@ -95,8 +95,8 @@ impl Storage {
                     }
                 };
 
-                self.queue.push_front(second);
                 self.queue.push_front(first);
+                self.queue.push_front(second);
             }
         }
     }
