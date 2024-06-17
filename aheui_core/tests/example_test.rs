@@ -1,7 +1,6 @@
 #[cfg(test)]
-mod tests {
+mod example_test {
     use std::{ fs, path::Path };
-
     use aheui_interpreter::create_processor_from_string;
 
     //Todo: 두가지 방법중에 무엇이 더 나은가?
@@ -117,22 +116,12 @@ mod tests {
     }
 
     #[test]
-    fn hello_world_test() {
-        execute_test("hello-world.puzzlet", false);
+    fn add1_to_n_speed_test() {
+        execute_test("add1ToN", true);
     }
 
     #[test]
-    fn bottle_test() {
-        execute_test("99bottles", false);
-    }
-
-    #[test]
-    fn factorial_test() {
-        execute_test("factorial", true);
-    }
-
-    #[test]
-    fn n2e63_test() {
-        execute_test("n2e63", false);
+    fn factorization_speed_test() {
+        execute_test("factorization", true);
     }
 }
