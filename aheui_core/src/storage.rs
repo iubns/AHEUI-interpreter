@@ -54,7 +54,7 @@ impl Storage {
             }
             StorageType::Queue => {
                 match self.queue.front() {
-                    Some(value) => { self.queue.push_back(*value) }
+                    Some(value) => { self.queue.push_front(*value) }
                     None => {}
                 }
             }

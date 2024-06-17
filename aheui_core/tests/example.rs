@@ -131,4 +131,9 @@ mod tests {
     fn factorial_test() {
         execute_test("factorial", true);
     }
+
+    #[test]
+    fn queue_test() {
+        execute_test("queue", false);
+    }
 }

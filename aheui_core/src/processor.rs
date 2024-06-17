@@ -199,7 +199,7 @@ impl Processor {
 
         self.way = match cmd.way {
             (0, 0, false) => self.way,
-            (x, y, true) => (cmd.way.0 * x, cmd.way.1 * y, false),
+            (x, y, true) => (self.way.0 * x, self.way.1 * y, false),
             _ => cmd.way,
         };
 
