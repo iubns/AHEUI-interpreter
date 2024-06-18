@@ -241,9 +241,6 @@ impl Processor {
                 }
             }
             CommandType::None => (),
-            _ => {
-                print!("형태는 구현이 필요함");
-            }
         }
 
         self.calc_next_position();

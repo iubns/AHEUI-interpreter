@@ -65,7 +65,7 @@ enum CommandType {
 }
 
 #[derive(Clone, Copy)]
-struct Command {
+pub struct Command {
     way: (i16, i16, bool),
     command_type: CommandType,
     third_char: u32,

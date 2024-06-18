@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod unit_test {
-    use aheui_interpreter::storage::{ self, Storage };
+    use aheui_interpreter::storage::{ Storage };
 
     const TEST_VALUE_1: i64 = 10;
     const TEST_VALUE_2: i64 = 20;
