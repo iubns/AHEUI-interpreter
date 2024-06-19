@@ -6,6 +6,7 @@ pub mod cell;
 pub mod storage;
 pub mod processor;
 pub mod input_receiver;
+pub mod brake_pointer;
 
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) -> Processor {
