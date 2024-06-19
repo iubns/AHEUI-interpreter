@@ -42,6 +42,11 @@ const initProcessorHooksAtom = atom<(() => void)[]>({
   default: [],
 })
 
+const mediumProcessorHooksAtom = atom<(() => void)[]>({
+  key: "medium-processor-hooks",
+  default: [],
+})
+
 const endProcessorHooksAtom = atom<(() => void)[]>({
   key: "end-processor-hooks",
   default: [],
@@ -68,6 +73,11 @@ export default function useAheuiCore() {
   const [initProcessorHooks, setInitProcessorHooks] = useRecoilState(
     initProcessorHooksAtom
   )
+
+  const [mediumProcessorHooks, setMediumProcessorHooks] = useRecoilState(
+    mediumProcessorHooksAtom
+  )
+
   const [endProcessorHooks, setEndProcessorHooks] = useRecoilState(
     endProcessorHooksAtom
   )
@@ -135,6 +145,7 @@ export default function useAheuiCore() {
         return
       }
       getStorageDataFromProcessor(newProcessor)
+      endProcessorHooks.forEach((hook) => hook())
     }
     mainLoop(newProcessor, 0)
   }
@@ -149,9 +160,11 @@ export default function useAheuiCore() {
       setNextProcessingPosition(processor.next_position)
       setOutputContent(processor.get_result)
       if (processor.is_end) {
+        initProcessorHooks.forEach((hook) => hook())
         setProcessor(null)
       }
       getStorageDataFromProcessor(processor)
+      mediumProcessorHooks.forEach((hook) => hook())
     }
   }
 
@@ -168,6 +181,10 @@ export default function useAheuiCore() {
     setInitProcessorHooks([...initProcessorHooks, newHook])
   }
 
+  function addMediumProcessorHook(newHook: () => void) {
+    setMediumProcessorHooks([...mediumProcessorHooks, newHook])
+  }
+
   function addEndProcessorHook(newHook: () => void) {
     setEndProcessorHooks([...endProcessorHooks, newHook])
   }
@@ -182,6 +199,7 @@ export default function useAheuiCore() {
     storageList,
     initProcessor,
     addInitProcessorHook,
+    addMediumProcessorHook,
     addEndProcessorHook,
   }
 }
