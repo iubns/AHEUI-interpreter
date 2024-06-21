@@ -12,10 +12,17 @@ enum Tabs {
 }
 
 export default function Bottom() {
-  const { addEndProcessorHook } = useAheuiCore()
+  const { addInitProcessorHook, addMediumProcessorHook, addEndProcessorHook } =
+    useAheuiCore()
   const [selectedTab, setSelectedTab] = useState(Tabs.input)
 
   useEffect(() => {
+    addInitProcessorHook(() => {
+      setSelectedTab(Tabs.input)
+    })
+    addMediumProcessorHook(() => {
+      setSelectedTab(Tabs.storage)
+    })
     addEndProcessorHook(() => {
       setSelectedTab(Tabs.output)
     })
