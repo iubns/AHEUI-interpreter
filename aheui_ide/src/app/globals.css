@@ -19,3 +19,16 @@
 body {
   height: 100vh;
 }
+
+.divider {
+  background-color: #252525;
+}
+
+.divider:hover {
+  background-color: #3874d4;
+  transition-duration: 0.1s;
+}
+
+.divider-move-mode {
+  background-color: #3874d4;
+}

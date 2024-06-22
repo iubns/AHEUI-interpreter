@@ -7,6 +7,7 @@ import _ from "lodash"
 import useEditor from "@/app/hook/useEditor"
 import CurrentPosition from "./NextExecutePosition"
 import BreakPoint from "./BreakPoint"
+import "./index.css"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }
 
@@ -166,7 +167,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
 
   return (
     <div
-      className="relative z-10 overflow-scroll"
+      className="relative z-10 overflow-scroll editor"
       style={{
         height: `${editorHeight}px`,
       }}

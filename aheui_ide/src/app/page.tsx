@@ -61,7 +61,9 @@ export default function Home() {
           <Editor editorHeight={editorHeight} isMoveMode={isMoveMode} />
           <div
             onMouseDown={onMouseDownDivider}
-            className="h-2 bg-blue-800 cursor-row-resize z-30"
+            className={`h-3 cursor-row-resize z-30 divider ${
+              isMoveMode ? "divider-move-mode" : ""
+            }`}
           />
           <Bottom />
         </div>
