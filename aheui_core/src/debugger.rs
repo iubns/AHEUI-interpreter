@@ -1,22 +1,22 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{ brake_pointer::{ BrakePointer }, cell::Position };
+use crate::{ break_pointer::BreakPointer, cell::Position };
 
 #[wasm_bindgen]
 pub struct Debugger {
-    brake_point_list: Vec<BrakePointer>,
+    break_point_list: Vec<BreakPointer>,
 }
 
 #[wasm_bindgen]
 impl Debugger {
     pub fn new() -> Debugger {
         Debugger {
-            brake_point_list: vec![],
+            break_point_list: vec![],
         }
     }
 
-    pub fn has_brake_pinter_at(&self, position: Position) -> bool {
-        let found_bp = self.brake_point_list
+    pub fn has_break_pinter_at(&self, position: Position) -> bool {
+        let found_bp = self.break_point_list
             .iter()
             .find(|bp| bp.position.x == position.x && bp.position.y == position.y);
         match found_bp {
@@ -25,13 +25,13 @@ impl Debugger {
         }
     }
 
-    pub fn set_brake_pointer(&mut self, x: usize, y: usize) {
-        let brake_pointer = BrakePointer {
+    pub fn set_break_pointer(&mut self, x: usize, y: usize) {
+        let break_pointer = BreakPointer {
             position: Position {
                 x,
                 y,
             },
         };
-        self.brake_point_list.push(brake_pointer)
+        self.break_point_list.push(break_pointer)
     }
 }

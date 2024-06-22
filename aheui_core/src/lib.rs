@@ -6,7 +6,7 @@ pub mod cell;
 pub mod storage;
 pub mod processor;
 pub mod input_receiver;
-pub mod brake_pointer;
+pub mod break_pointer;
 pub mod debugger;
 
 #[wasm_bindgen]

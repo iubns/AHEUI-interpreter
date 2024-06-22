@@ -140,7 +140,7 @@ impl Processor {
         while self.cmd_processing_count < cycle_max && !self.is_end {
             self.run_one();
             self.cmd_processing_count += 1;
-            if debugger.has_brake_pinter_at(self.next_position) {
+            if debugger.has_break_pinter_at(self.next_position) {
                 return true;
             }
         }
