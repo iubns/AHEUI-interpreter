@@ -157,6 +157,17 @@ impl Processor {
 
     pub fn run_all_cycle(&mut self) {
         let mut cycle_count = 1;
+        loop {
+            self.run_one_cycle(cycle_count);
+            if self.is_end {
+                return;
+            }
+            cycle_count += 1;
+        }
+    }
+
+    pub fn run_all_cycle_with_debug(&mut self) {
+        let mut cycle_count = 1;
         let debugger = Debugger::new();
         loop {
             self.run_with_debug(cycle_count, &debugger);
