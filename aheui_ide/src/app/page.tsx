@@ -17,21 +17,24 @@ export default function Home() {
   aheuiCoreRef.current = aheuiCore
 
   useEffect(() => {
-    if (document) {
-      document.onkeydown = (event) => {
-        switch (event.key) {
-          case "F10":
-            aheuiCoreRef.current.startOne()
-            event.preventDefault()
-            break
-          case "F5":
-            aheuiCoreRef.current.startWithDebug()
-            event.preventDefault()
-            break
-        }
-      }
+    window.addEventListener("keydown", keyDownEvent)
+    return () => {
+      window.removeEventListener("keydown", keyDownEvent)
     }
   }, [])
+
+  function keyDownEvent(event: KeyboardEvent) {
+    switch (event.key) {
+      case "F10":
+        aheuiCoreRef.current.startOne()
+        event.preventDefault()
+        break
+      case "F5":
+        aheuiCoreRef.current.startWithDebug()
+        event.preventDefault()
+        break
+    }
+  }
 
   function onMouseDownDivider() {
     setMoveMode(true)
@@ -58,7 +61,9 @@ export default function Home() {
           <Editor editorHeight={editorHeight} isMoveMode={isMoveMode} />
           <div
             onMouseDown={onMouseDownDivider}
-            className="h-2 bg-blue-800 cursor-row-resize z-30"
+            className={`h-3 cursor-row-resize z-30 divider ${
+              isMoveMode ? "divider-move-mode" : ""
+            }`}
           />
           <Bottom />
         </div>
