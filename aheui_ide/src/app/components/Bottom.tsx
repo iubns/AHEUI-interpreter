@@ -61,7 +61,6 @@ export default function Bottom() {
       {selectedTab === Tabs.output && <Output />}
       {selectedTab === Tabs.input && <Input />}
       {selectedTab === Tabs.storage && <Storage />}
-      <StatusBar />
     </div>
   )
 }

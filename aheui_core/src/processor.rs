@@ -135,23 +135,16 @@ impl Processor {
         self.cmd_size = cmd_size;
     }
 
-    //Todo: 정리 해야 함
-    pub fn run_with_debug(&mut self, debugger: Debugger) {
-        let cycle_max = (10_000_000 + self.cmd_processing_count).try_into().unwrap();
+    pub fn run_with_debug(&mut self, cycle_count: i32, debugger: &Debugger) -> bool {
+        let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
         while self.cmd_processing_count < cycle_max && !self.is_end {
-            self.cmd_processing_count += 1;
-        }
-        let mut cycle_count = 1;
-        loop {
             self.run_one();
-            cycle_count += 1;
-            if self.is_end {
-                break;
-            }
+            self.cmd_processing_count += 1;
             if debugger.has_brake_pinter_at(self.next_position) {
-                return;
+                return true;
             }
         }
+        false
     }
 
     pub fn run_one_cycle(&mut self, cycle_count: i32) {
@@ -164,8 +157,9 @@ impl Processor {
 
     pub fn run_all_cycle(&mut self) {
         let mut cycle_count = 1;
+        let debugger = Debugger::new();
         loop {
-            self.run_one_cycle(cycle_count);
+            self.run_with_debug(cycle_count, &debugger);
             if self.is_end {
                 return;
             }

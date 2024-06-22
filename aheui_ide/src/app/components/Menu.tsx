@@ -40,7 +40,7 @@ export default function Menu() {
   }
 
   return (
-    <div className="h-full flex flex-row border" style={{ color: "white" }}>
+    <div className="h-full flex flex-row " style={{ color: "white" }}>
       <div style={{ backgroundColor: "#2C2C2C" }}>
         {Object.entries(MenuType).map(([key, value]) => {
           if (typeof value === "string") return null
@@ -58,7 +58,7 @@ export default function Menu() {
           )
         })}
       </div>
-      <div>{FunctionArea()}</div>
+      <div style={{ backgroundColor: "#2F2F2F" }}>{FunctionArea()}</div>
     </div>
   )
 }

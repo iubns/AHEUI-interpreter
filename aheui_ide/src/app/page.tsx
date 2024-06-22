@@ -1,38 +1,31 @@
 "use client"
 
-import { MouseEvent, useEffect, useState } from "react"
+import { MouseEvent, useEffect, useRef, useState } from "react"
 import Controller from "./components/Controller"
 import Editor from "./components/Editor"
 import Menu from "./components/Menu"
-import useRust from "./hook/useAheuiCore"
+import useAheuiCore from "./hook/useAheuiCore"
 import Bottom from "./components/Bottom"
+import StatusBar from "./components/StatusBar"
 
 export default function Home() {
   const [isMoveMode, setMoveMode] = useState(false)
   const [editorHeight, setEditorHeight] = useState(20 * 30)
-  const rustHook = useRust()
+  const aheuiCore = useAheuiCore()
+  const aheuiCoreRef = useRef(aheuiCore)
 
-  async function runCmd(type: string) {
-    const { startAll, startOne, initProcessor } = await rustHook
-    switch (type) {
-      case "one":
-        startOne()
-        break
-      case "all":
-        startAll()
-        break
-      case "init":
-        initProcessor()
-        break
-    }
-  }
+  aheuiCoreRef.current = aheuiCore
 
   useEffect(() => {
     if (document) {
       document.onkeydown = (event) => {
         switch (event.key) {
           case "F10":
-            runCmd("one")
+            aheuiCoreRef.current.startOne()
+            event.preventDefault()
+            break
+          case "F5":
+            aheuiCoreRef.current.startWithDebug()
             event.preventDefault()
             break
         }
@@ -70,6 +63,7 @@ export default function Home() {
           <Bottom />
         </div>
       </div>
+      <StatusBar />
     </div>
   )
 }
