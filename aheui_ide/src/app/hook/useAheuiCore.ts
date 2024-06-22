@@ -173,7 +173,7 @@ export default function useAheuiCore() {
   async function startWithDebug() {
     const debugging: Debugger = Debugger.new()
     brakePointerList.map((BP) => {
-      debugging.set_brake_pointer(BP.position.x, BP.position.y)
+      debugging.set_break_pointer(BP.position.x, BP.position.y)
     })
 
     let currentProcessor = !processor ? initProcessor() : processor
@@ -183,7 +183,7 @@ export default function useAheuiCore() {
 
     function mainLoop(currentProcessor: Processor, cycleCount: number) {
       if (!currentProcessor) return
-      const isBrake = currentProcessor.run_with_debug(cycleCount, debugging)
+      const isBreak = currentProcessor.run_with_debug(cycleCount, debugging)
 
       const endTime = window.performance.now()
       setProcessingTime(endTime - startTime)
@@ -191,7 +191,7 @@ export default function useAheuiCore() {
       setOutputContent(currentProcessor.get_result)
       setNextProcessingPosition(currentProcessor.next_position)
 
-      if (!currentProcessor.is_end && !isBrake) {
+      if (!currentProcessor.is_end && !isBreak) {
         setTimeout(() => mainLoop(currentProcessor, cycleCount + 1), 1)
         return
       }

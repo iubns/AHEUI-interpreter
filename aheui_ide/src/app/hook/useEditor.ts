@@ -3,21 +3,21 @@ import { CellValue } from "../components/Editor/Cell"
 import _ from "lodash"
 import { useEffect, useRef } from "react"
 import Position from "@/interfaces/position"
-import { BrakePointer } from "../../../public/aheui-core-wasm/aheui_interpreter"
+import { BreakPointer } from "../../../public/aheui-core-wasm/aheui_interpreter"
 
 const cellListAtom = atom<CellValue[]>({
   key: "cell-list",
   default: [],
 })
 
-const brakePointListAtom = atom<BrakePointer[]>({
+const brakePointListAtom = atom<BreakPointer[]>({
   key: "brake-point-list",
   default: [],
 })
 
 export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
-  const [brakePointerList, setBrakePointerList] =
+  const [brakePointerList, setBreakPointerList] =
     useRecoilState(brakePointListAtom)
   const cellListRef = useRef(cellList)
 
@@ -91,14 +91,14 @@ export default function useEditor() {
       (bp) => bp.position.x === position.x && bp.position.y === position.y
     )
     if (foundBP) {
-      setBrakePointerList([
+      setBreakPointerList([
         ...brakePointerList.filter(
           (bp) => bp.position.x !== position.x && bp.position.y !== position.y
         ),
       ])
     } else {
-      const newBP = { position, free: () => {} } as BrakePointer
-      setBrakePointerList([...brakePointerList, newBP])
+      const newBP = { position, free: () => {} } as BreakPointer
+      setBreakPointerList([...brakePointerList, newBP])
     }
   }
 
