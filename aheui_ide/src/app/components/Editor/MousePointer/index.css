@@ -1,0 +1,12 @@
+.mouse-pointer-animation {
+  transition-duration: 0.2s;
+  transition-timing-function: ease-out;
+}
+
+.mouse-pointer {
+  width: 30px;
+  height: 30px;
+  border-width: 1px;
+  border-style: dashed;
+  z-index: 100;
+}

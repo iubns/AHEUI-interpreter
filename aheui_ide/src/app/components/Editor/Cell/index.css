@@ -1,0 +1,10 @@
+.cell-style {
+  width: 30px;
+  height: 30px;
+  border-width: 1px;
+  border-color: #555;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

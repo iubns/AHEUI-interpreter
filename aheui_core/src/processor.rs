@@ -1,8 +1,9 @@
-use std::usize;
+use std::{ usize };
 
 use wasm_bindgen::prelude::*;
 use crate::{
     cell::{ CellValue, Position },
+    debugger::Debugger,
     get_command,
     get_line_count,
     input_receiver::{ self, InputReceiver },
@@ -134,35 +135,26 @@ impl Processor {
         self.cmd_size = cmd_size;
     }
 
-    fn calc_next_position(&mut self) {
-        let next_x_position = (self.current_position.x as i16) + self.way.0;
-        if next_x_position > (self.cmd_size.x as i16) {
-            self.next_position.x = 0;
-        } else if next_x_position < 0 {
-            self.next_position.x = self.cmd_size.x;
-        } else {
-            self.next_position.x = next_x_position as usize;
-        }
-
-        let next_y_position = (self.current_position.y as i16) + self.way.1;
-        if next_y_position > (self.cmd_size.y as i16) {
-            self.next_position.y = 0;
-        } else if next_y_position < 0 {
-            self.next_position.y = self.cmd_size.y;
-        } else {
-            self.next_position.y = next_y_position as usize;
-        }
-    }
-
-    fn run_one_cycle(&mut self, cycle_count: i32) {
-        let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
+    //Todo: 정리 해야 함
+    pub fn run_with_debug(&mut self, debugger: Debugger) {
+        let cycle_max = (10_000_000 + self.cmd_processing_count).try_into().unwrap();
         while self.cmd_processing_count < cycle_max && !self.is_end {
+            self.cmd_processing_count += 1;
+        }
+        let mut cycle_count = 1;
+        loop {
             self.run_one();
-            self.cmd_processing_count = self.cmd_processing_count + 1;
+            cycle_count += 1;
+            if self.is_end {
+                break;
+            }
+            if debugger.has_brake_pinter_at(self.next_position) {
+                return;
+            }
         }
     }
 
-    pub fn run_with_debug(&mut self, cycle_count: i32) {
+    pub fn run_one_cycle(&mut self, cycle_count: i32) {
         let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
         while self.cmd_processing_count < cycle_max && !self.is_end {
             self.run_one();
@@ -174,47 +166,22 @@ impl Processor {
         let mut cycle_count = 1;
         loop {
             self.run_one_cycle(cycle_count);
-            cycle_count += 1;
             if self.is_end {
-                break;
+                return;
             }
+            cycle_count += 1;
         }
     }
-
-    pub fn check_debug_pointer(&mut self) {}
 
     pub fn run_one(&mut self) {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
 
-        let cell_value: Option<&mut CellValue> = match
-            self.cmd_list.get_mut(self.current_position.y)
-        {
-            Some(row) => row.get_mut(self.current_position.x),
-            None => None,
-        };
-
-        let cell_value = match cell_value {
+        let cmd = match self.get_cmd_from_position(self.current_position) {
+            Some(cmd) => cmd,
             None => {
                 self.calc_next_position();
                 return;
-            }
-            Some(cell) => cell,
-        };
-
-        let cmd: Command = match cell_value.cash_cmd {
-            Some(cmd) => cmd,
-            None => {
-                let cmd = get_command(&cell_value.value);
-                let cmd = match cmd {
-                    Some(cmd) => cmd,
-                    None => {
-                        self.calc_next_position();
-                        return;
-                    }
-                };
-                cell_value.cash_cmd = Some(cmd);
-                cmd
             }
         };
 
@@ -250,6 +217,56 @@ impl Processor {
         }
 
         self.calc_next_position();
+    }
+
+    fn calc_next_position(&mut self) {
+        let next_x_position = (self.current_position.x as i16) + self.way.0;
+        if next_x_position > (self.cmd_size.x as i16) {
+            self.next_position.x = 0;
+        } else if next_x_position < 0 {
+            self.next_position.x = self.cmd_size.x;
+        } else {
+            self.next_position.x = next_x_position as usize;
+        }
+
+        let next_y_position = (self.current_position.y as i16) + self.way.1;
+        if next_y_position > (self.cmd_size.y as i16) {
+            self.next_position.y = 0;
+        } else if next_y_position < 0 {
+            self.next_position.y = self.cmd_size.y;
+        } else {
+            self.next_position.y = next_y_position as usize;
+        }
+    }
+
+    fn get_cmd_from_position(&mut self, position: Position) -> Option<Command> {
+        let cell_value: Option<&mut CellValue> = match self.cmd_list.get_mut(position.y) {
+            Some(row) => row.get_mut(position.x),
+            None => None,
+        };
+
+        let cell_value = match cell_value {
+            Some(cell) => cell,
+            None => {
+                return None;
+            }
+        };
+
+        match cell_value.cash_cmd {
+            Some(cmd) => Some(cmd),
+            None => {
+                let cmd = get_command(&cell_value.value);
+                match cmd {
+                    Some(cmd) => {
+                        cell_value.cash_cmd = Some(cmd);
+                    }
+                    None => {
+                        return None;
+                    }
+                }
+                cmd
+            }
+        }
     }
 
     fn push(&mut self, cmd: Command) -> bool {

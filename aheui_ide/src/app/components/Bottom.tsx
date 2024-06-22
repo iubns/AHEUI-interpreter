@@ -20,9 +20,6 @@ export default function Bottom() {
     addInitProcessorHook(() => {
       setSelectedTab(Tabs.input)
     })
-    addMediumProcessorHook(() => {
-      setSelectedTab(Tabs.storage)
-    })
     addEndProcessorHook(() => {
       setSelectedTab(Tabs.output)
     })

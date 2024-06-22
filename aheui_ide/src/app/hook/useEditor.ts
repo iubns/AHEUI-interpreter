@@ -3,14 +3,22 @@ import { CellValue } from "../components/Editor/Cell"
 import _ from "lodash"
 import { useEffect, useRef } from "react"
 import Position from "@/interfaces/position"
+import { BrakePointer } from "../../../public/aheui-core-wasm/aheui_interpreter"
 
 const cellListAtom = atom<CellValue[]>({
   key: "cell-list",
   default: [],
 })
 
+const brakePointListAtom = atom<BrakePointer[]>({
+  key: "brake-point-list",
+  default: [],
+})
+
 export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
+  const [brakePointerList, setBrakePointerList] =
+    useRecoilState(brakePointListAtom)
   const cellListRef = useRef(cellList)
 
   useEffect(() => {
@@ -78,8 +86,26 @@ export default function useEditor() {
     setCellList([])
   }
 
+  function togglePoint(position: Position) {
+    const foundBP = brakePointerList.find(
+      (bp) => bp.position.x === position.x && bp.position.y === position.y
+    )
+    if (foundBP) {
+      setBrakePointerList([
+        ...brakePointerList.filter(
+          (bp) => bp.position.x !== position.x && bp.position.y !== position.y
+        ),
+      ])
+    } else {
+      const newBP = { position, free: () => {} } as BrakePointer
+      setBrakePointerList([...brakePointerList, newBP])
+    }
+  }
+
   return {
     cellList,
+    togglePoint,
+    brakePointerList,
     changeCell,
     bulkInsert,
     clearCellList,

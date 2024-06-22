@@ -1,0 +1,16 @@
+@keyframes blink-effect {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.cursor-animation {
+  border-color: #ddd;
+  animation: blink-effect 1s infinite;
+}
+
+.cursor {
+  width: 30px;
+  height: 30px;
+  z-index: 500;
+}

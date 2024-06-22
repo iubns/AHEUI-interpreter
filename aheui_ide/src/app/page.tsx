@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-full">
       <Controller />
-      <div className="flex flex-row h-full bg-gray-700">
+      <div className="flex flex-row h-full" style={{ backgroundColor: "#333" }}>
         <Menu />
         <div
           className="flex flex-col flex-grow h-full"

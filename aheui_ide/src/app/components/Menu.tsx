@@ -41,7 +41,7 @@ export default function Menu() {
 
   return (
     <div className="h-full flex flex-row border" style={{ color: "white" }}>
-      <div className="bg-slate-700">
+      <div style={{ backgroundColor: "#2C2C2C" }}>
         {Object.entries(MenuType).map(([key, value]) => {
           if (typeof value === "string") return null
           return (
