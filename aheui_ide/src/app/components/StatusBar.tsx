@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import useAheuiCore from "../hook/useAheuiCore"
+import { isNull } from "lodash"
 
 export default function StatusBar() {
   const tipIndexRef = useRef(0)
@@ -11,6 +12,9 @@ export default function StatusBar() {
     "입력 탭을 클릭하여 값을 미리 넣을 수 있습니다.",
     "입력 탭의 빨간 칸은 앞으로 들어갈 값 입니다.",
     "숫자를 요청시 글자가 들어갈 경우 재요청 합니다.",
+    "더블 클릭으로 브레이크 포인트를 추가 할 수 있습니다.",
+    "F10으로 한단계 실행을 할 수 있습니다.",
+    "F5로 디버깅 모드로 실행 할 수 있습니다.",
   ]
 
   useEffect(() => {
@@ -30,7 +34,7 @@ export default function StatusBar() {
   return (
     <div className="flex bg-gray-800 text-xs pr-4 text-white p-1 justify-between">
       <div>
-        {processingTime && (
+        {!isNull(processingTime) && (
           <div>
             {processingTime.toFixed(2)}ms (
             {runningCount?.toLocaleString("ko-KR")} cmd)

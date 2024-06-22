@@ -1,16 +1,15 @@
 import Position from "@/interfaces/position"
+import "./index.css"
 
 interface IProps {
   position: Position
 }
 
-export default function Cursor({ position }: IProps) {
+export default function BrakePoint({ position }: IProps) {
   return (
     <div
-      className="border border-solid absolute"
+      className="border border-solid absolute brake-pointe"
       style={{
-        width: "30px",
-        height: "30px",
         top: position.y * 30 + "px",
         left: position.x * 30 + "px",
       }}

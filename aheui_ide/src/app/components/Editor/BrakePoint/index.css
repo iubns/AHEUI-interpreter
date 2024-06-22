@@ -1,0 +1,6 @@
+.brake-pointe {
+  width: 30px;
+  height: 30px;
+  border-color: red;
+  z-index: 1000;
+}

@@ -20,9 +20,6 @@ export default function Bottom() {
     addInitProcessorHook(() => {
       setSelectedTab(Tabs.input)
     })
-    addMediumProcessorHook(() => {
-      setSelectedTab(Tabs.storage)
-    })
     addEndProcessorHook(() => {
       setSelectedTab(Tabs.output)
     })
@@ -64,7 +61,6 @@ export default function Bottom() {
       {selectedTab === Tabs.output && <Output />}
       {selectedTab === Tabs.input && <Input />}
       {selectedTab === Tabs.storage && <Storage />}
-      <StatusBar />
     </div>
   )
 }

@@ -12,7 +12,8 @@ import Position from "@/interfaces/position"
 import Cursor from "./Cursor"
 import _ from "lodash"
 import useEditor from "@/app/hook/useEditor"
-import CurrentPosition from "./CurrentPosition"
+import CurrentPosition from "./NextExecutePosition"
+import BrakePoint from "./BrakePoint"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }
 
@@ -22,7 +23,14 @@ interface IProps {
 }
 
 export default function Editor({ editorHeight, isMoveMode }: IProps) {
-  const { cellList, bulkInsert, removeCell, changeCell } = useEditor()
+  const {
+    cellList,
+    bulkInsert,
+    removeCell,
+    changeCell,
+    togglePoint,
+    brakePointerList,
+  } = useEditor()
   const hiddenRef = useRef<HTMLInputElement>(null)
   const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 })
   const [preLength, setPreLength] = useState(0)
@@ -52,12 +60,13 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
   }
 
   function clickCell() {
-    const foundCell = cellList.find(
-      (cell) =>
-        cell.position.x === mousePosition.x &&
-        cell.position.y === mousePosition.y
-    )
     setValueToCursor({ x: mousePosition.x, y: mousePosition.y })
+    hiddenRef.current?.focus()
+    sv(v + 1)
+  }
+
+  function doubleClickCell() {
+    togglePoint(mousePosition)
     hiddenRef.current?.focus()
     sv(v + 1)
   }
@@ -158,6 +167,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
       }}
       onMouseMove={mouseMove}
       onClick={clickCell}
+      onDoubleClick={doubleClickCell}
     >
       <input
         type="text"
@@ -180,6 +190,12 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
           key={`${cellValue.position.x}_${cellValue.position.y}`}
           position={cellValue.position}
           value={cellValue.value}
+        />
+      ))}
+      {brakePointerList.map((BP, index) => (
+        <BrakePoint
+          key={index}
+          position={{ x: BP.position.x, y: BP.position.y }}
         />
       ))}
     </div>

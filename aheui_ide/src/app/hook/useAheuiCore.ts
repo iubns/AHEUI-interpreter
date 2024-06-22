@@ -5,6 +5,7 @@ import init, {
   get_cell_value,
   Position,
   Processor,
+  Debugger,
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
 
@@ -21,7 +22,7 @@ const processorAtom = atom<Processor | null>({
 const nextProcessingPositionAtom = atom<Position>({
   key: "processor-position",
   default: {
-    x: -1,
+    x: 0,
     y: -1,
     free: () => {},
   },
@@ -68,7 +69,7 @@ export default function useAheuiCore() {
   const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
   const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
   const [storageList, setStorage] = useRecoilState(storageAtom)
-  const { cellList } = useEditor()
+  const { cellList, brakePointerList } = useEditor()
 
   const [initProcessorHooks, setInitProcessorHooks] = useRecoilState(
     initProcessorHooksAtom
@@ -126,28 +127,28 @@ export default function useAheuiCore() {
   }
 
   async function startAll() {
-    const newProcessor = initProcessor()
-    if (!newProcessor) return
+    let currentProcessor = processor ? processor : initProcessor()
+    if (!currentProcessor) return
     const startTime = window.performance.now()
 
-    function mainLoop(newProcessor: Processor, cycleCount: number) {
-      if (!newProcessor) return
-      newProcessor.run_one_cycle(cycleCount)
+    function mainLoop(currentProcessor: Processor, cycleCount: number) {
+      currentProcessor.run_one_cycle(cycleCount)
 
       const endTime = window.performance.now()
       setProcessingTime(endTime - startTime)
-      setRunningCount(newProcessor.cmd_processing_count)
-      setOutputContent(newProcessor.get_result)
-      setNextProcessingPosition(newProcessor.current_position)
+      setRunningCount(currentProcessor.cmd_processing_count)
+      setOutputContent(currentProcessor.get_result)
+      setNextProcessingPosition(currentProcessor.next_position)
 
-      if (!newProcessor.is_end) {
-        setTimeout(() => mainLoop(newProcessor, cycleCount + 1), 0)
+      if (!currentProcessor.is_end) {
+        setTimeout(() => mainLoop(currentProcessor, cycleCount + 1), 1)
         return
       }
-      getStorageDataFromProcessor(newProcessor)
+      getStorageDataFromProcessor(currentProcessor)
+      setProcessor(null)
       endProcessorHooks.forEach((hook) => hook())
     }
-    mainLoop(newProcessor, 0)
+    mainLoop(currentProcessor, 0)
   }
 
   function startOne() {
@@ -159,13 +160,49 @@ export default function useAheuiCore() {
       processor.run_one()
       setNextProcessingPosition(processor.next_position)
       setOutputContent(processor.get_result)
+      setRunningCount(processor.cmd_processing_count)
+      getStorageDataFromProcessor(processor)
       if (processor.is_end) {
         initProcessorHooks.forEach((hook) => hook())
         setProcessor(null)
       }
-      getStorageDataFromProcessor(processor)
       mediumProcessorHooks.forEach((hook) => hook())
     }
+  }
+
+  async function startWithDebug() {
+    const debugging: Debugger = Debugger.new()
+    brakePointerList.map((BP) => {
+      debugging.set_brake_pointer(BP.position.x, BP.position.y)
+    })
+
+    let currentProcessor = !processor ? initProcessor() : processor
+    if (!currentProcessor) return
+
+    const startTime = window.performance.now()
+
+    function mainLoop(currentProcessor: Processor, cycleCount: number) {
+      if (!currentProcessor) return
+      const isBrake = currentProcessor.run_with_debug(cycleCount, debugging)
+
+      const endTime = window.performance.now()
+      setProcessingTime(endTime - startTime)
+      setRunningCount(currentProcessor.cmd_processing_count)
+      setOutputContent(currentProcessor.get_result)
+      setNextProcessingPosition(currentProcessor.next_position)
+
+      if (!currentProcessor.is_end && !isBrake) {
+        setTimeout(() => mainLoop(currentProcessor, cycleCount + 1), 1)
+        return
+      }
+      getStorageDataFromProcessor(currentProcessor)
+
+      if (currentProcessor.is_end) {
+        setProcessor(null)
+      }
+      endProcessorHooks.forEach((hook) => hook())
+    }
+    mainLoop(currentProcessor, 0)
   }
 
   function getStorageDataFromProcessor(processor: Processor) {
@@ -192,6 +229,7 @@ export default function useAheuiCore() {
   return {
     startOne,
     startAll,
+    startWithDebug,
     processingTime,
     nextProcessingPosition,
     runningCount,

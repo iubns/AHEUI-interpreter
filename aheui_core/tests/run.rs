@@ -20,7 +20,6 @@ mod run_test {
 
         let start_time = Instant::now();
         let mut processor = create_processor_from_string(&aheui_cmd);
-        let mut cycle_count = 1;
 
         if has_input {
             let aheui_input = match
@@ -33,14 +32,7 @@ mod run_test {
             };
             processor.input_receiver.set_test_input_date(aheui_input);
         }
-
-        loop {
-            processor.run_one_cycle(cycle_count);
-            cycle_count += 1;
-            if processor.is_end {
-                break;
-            }
-        }
+        processor.run_all_cycle();
 
         let end_time = Instant::now();
         let elapsed_time = end_time.duration_since(start_time);
@@ -90,7 +82,6 @@ mod run_test {
                 };
 
                 let mut processor = create_processor_from_string(&aheui_cmd);
-                let mut cycle_count = 1;
 
                 match fs::read_to_string(format!("{}/{}.in", _test_folder, test_name)) {
                     Ok(aheui_input) => {
@@ -99,14 +90,7 @@ mod run_test {
                     Err(_) => (),
                 }
 
-                loop {
-                    println!("{} 테스트 {}번째 실행중", test_name, cycle_count);
-                    processor.run_one_cycle(cycle_count);
-                    cycle_count += 1;
-                    if processor.is_end {
-                        break;
-                    }
-                }
+                processor.run_all_cycle();
                 let result = processor.result_list;
 
                 let aheui_out = match

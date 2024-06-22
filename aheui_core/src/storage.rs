@@ -48,12 +48,11 @@ impl Storage {
                 let last_value = match self.pop() {
                     Some(value) => value,
                     None => {
-                        return false;
+                        return true;
                     }
                 };
                 self.push(last_value);
                 self.push(last_value);
-                true
             }
             StorageType::Queue => {
                 match self.queue.front() {
@@ -61,12 +60,12 @@ impl Storage {
                         self.queue.push_front(*value);
                     }
                     None => {
-                        return false;
+                        return true;
                     }
                 }
-                true
             }
         }
+        false
     }
 
     pub fn swap(&mut self) -> bool {
@@ -75,52 +74,55 @@ impl Storage {
                 let first = match self.pop() {
                     Some(value) => value,
                     None => {
-                        return false;
+                        return true;
                     }
                 };
                 let second = match self.pop() {
                     Some(value) => value,
                     None => {
                         self.push(first);
-                        return false;
+                        return true;
                     }
                 };
                 self.push(first);
                 self.push(second);
-                true
+                false
             }
             StorageType::Queue => {
                 let first = match self.queue.pop_front() {
                     Some(value) => value,
                     None => {
-                        return false;
+                        return true;
                     }
                 };
                 let second = match self.queue.pop_front() {
                     Some(value) => value,
                     None => {
                         self.queue.push_front(first);
-                        return false;
+                        return true;
                     }
                 };
 
                 self.queue.push_front(first);
                 self.queue.push_front(second);
-                true
+                false
             }
         }
     }
 
-    pub fn select(&mut self, value: u32) {
+    pub fn select(&mut self, value: u32) -> bool {
         match value {
             21 => {
                 self.selected_storage = StorageType::Queue;
             }
-            27 => { panic!("통로는 구현 예정입니다.") }
+            27 => {
+                panic!("통로는 구현 예정입니다.");
+            }
             stack_index => {
                 self.selected_storage = StorageType::Stack(stack_index as usize);
             }
         }
+        false
     }
 
     pub fn move_value(&mut self, value: usize) -> bool {
@@ -132,7 +134,7 @@ impl Storage {
         let current_storage_value = match current_storage_value_option {
             Some(value) => value,
             None => {
-                return false;
+                return true;
             }
         };
 
@@ -147,21 +149,21 @@ impl Storage {
                 self.stack[stack_mun].push(current_storage_value);
             }
         }
-        return true;
+        false
     }
 
     pub fn equal(&mut self) -> bool {
         let first = match self.pop() {
             Some(value) => value,
             None => {
-                return false;
+                return true;
             }
         };
         let second = match self.pop() {
             Some(value) => value,
             None => {
                 self.revert(first);
-                return false;
+                return true;
             }
         };
         let diff = second - first;
@@ -170,7 +172,7 @@ impl Storage {
             _ => 0,
         };
         self.push(result);
-        true
+        false
     }
 
     pub fn revert(&mut self, value: i64) {
@@ -178,5 +180,108 @@ impl Storage {
             StorageType::Stack(_) => { self.push(value) }
             StorageType::Queue => { self.queue.push_front(value) }
         }
+    }
+
+    pub fn add(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return true;
+            }
+        };
+        self.push(first.overflowing_add(second).0);
+        false
+    }
+
+    pub fn sub(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return true;
+            }
+        };
+        self.push(second.overflowing_sub(first).0);
+        false
+    }
+
+    pub fn mul(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return true;
+            }
+        };
+        self.push(first.overflowing_mul(second).0);
+        false
+    }
+
+    pub fn div(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return true;
+            }
+        };
+        self.push(second / first);
+        false
+    }
+
+    pub fn remainder(&mut self) -> bool {
+        let first = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        let second = match self.pop() {
+            Some(value) => value,
+            None => {
+                self.revert(first);
+                return true;
+            }
+        };
+        self.push(second % first);
+        false
+    }
+
+    pub fn condition(&mut self) -> bool {
+        let target_value = match self.pop() {
+            Some(value) => value,
+            None => {
+                return true;
+            }
+        };
+        if target_value == 0 {
+            return true;
+        }
+        false
     }
 }
