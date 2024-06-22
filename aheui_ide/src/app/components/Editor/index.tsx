@@ -1,11 +1,4 @@
-import {
-  ChangeEvent,
-  KeyboardEvent,
-  MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from "react"
 import Cell, { CellValue } from "./Cell"
 import MousePointer from "./MousePointer"
 import Position from "@/interfaces/position"
@@ -40,10 +33,22 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
 
   useEffect(() => {
     window.addEventListener("paste", paste)
+    window.addEventListener("keydown", keyDownEvent)
+
     return () => {
       window.removeEventListener("paste", paste)
+      window.removeEventListener("keydown", keyDownEvent)
     }
   }, [])
+
+  function keyDownEvent(event: KeyboardEvent) {
+    switch (event.key) {
+      case "F9":
+        togglePoint(currentCursor.position)
+        event.preventDefault()
+        break
+    }
+  }
 
   function paste(event: ClipboardEvent) {
     const paste = event.clipboardData?.getData("text")
@@ -112,7 +117,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
     setInputValue(foundCell ? foundCell.value || "" : "")
   }
 
-  function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.keyCode === 229) return
     switch (e.code) {
       case "Enter":

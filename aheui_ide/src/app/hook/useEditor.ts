@@ -17,13 +17,18 @@ const brakePointListAtom = atom<BreakPointer[]>({
 
 export default function useEditor() {
   const [cellList, setCellList] = useRecoilState(cellListAtom)
+  const cellListRef = useRef(cellList)
   const [brakePointerList, setBreakPointerList] =
     useRecoilState(brakePointListAtom)
-  const cellListRef = useRef(cellList)
+  const brakePointerListRef = useRef(brakePointerList)
 
   useEffect(() => {
     cellListRef.current = cellList
   }, [cellList])
+
+  useEffect(() => {
+    brakePointerListRef.current = brakePointerList
+  }, [brakePointerList])
 
   function bulkInsert(content: string, startPosition: Position) {
     let insertCellList: CellValue[] = []
@@ -87,18 +92,25 @@ export default function useEditor() {
   }
 
   function togglePoint(position: Position) {
-    const foundBP = brakePointerList.find(
+    const foundBP = brakePointerListRef.current.find(
       (bp) => bp.position.x === position.x && bp.position.y === position.y
     )
     if (foundBP) {
       setBreakPointerList([
-        ...brakePointerList.filter(
-          (bp) => bp.position.x !== position.x && bp.position.y !== position.y
+        ...brakePointerListRef.current.filter(
+          (bp) =>
+            !(bp.position.x === position.x && bp.position.y === position.y)
         ),
       ])
     } else {
-      const newBP = { position, free: () => {} } as BreakPointer
-      setBreakPointerList([...brakePointerList, newBP])
+      const newBP = {
+        position: {
+          x: position.x,
+          y: position.y,
+        },
+        free: () => {},
+      } as BreakPointer
+      setBreakPointerList([...brakePointerListRef.current, newBP])
     }
   }
 
