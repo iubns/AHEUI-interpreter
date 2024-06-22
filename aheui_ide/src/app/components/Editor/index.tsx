@@ -13,7 +13,7 @@ import Cursor from "./Cursor"
 import _ from "lodash"
 import useEditor from "@/app/hook/useEditor"
 import CurrentPosition from "./NextExecutePosition"
-import BrakePoint from "./BrakePoint"
+import BreakPoint from "./BreakPoint"
 
 const currentCursor: CellValue = { position: { x: -1, y: -1 }, value: "" }
 
@@ -193,7 +193,7 @@ export default function Editor({ editorHeight, isMoveMode }: IProps) {
         />
       ))}
       {brakePointerList.map((BP, index) => (
-        <BrakePoint
+        <BreakPoint
           key={index}
           position={{ x: BP.position.x, y: BP.position.y }}
         />

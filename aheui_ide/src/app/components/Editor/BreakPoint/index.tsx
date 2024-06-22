@@ -5,7 +5,7 @@ interface IProps {
   position: Position
 }
 
-export default function BrakePoint({ position }: IProps) {
+export default function BreakPoint({ position }: IProps) {
   return (
     <div
       className="border border-solid absolute brake-pointe"
