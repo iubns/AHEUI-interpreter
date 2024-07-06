@@ -1,11 +1,10 @@
-use std::{ usize };
+use std::usize;
 
 use wasm_bindgen::prelude::*;
 use crate::{
     cell::{ CellValue, Position },
     debugger::Debugger,
     get_command,
-    get_line_count,
     input_receiver::{ self, InputReceiver },
     revert_way,
     storage::{ self, Storage },
@@ -148,6 +147,10 @@ impl Processor {
     }
 
     pub fn run_one_cycle(&mut self, cycle_count: i32) {
+        if cycle_count > 100 {
+            self.is_end = true;
+            return;
+        }
         let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
         while self.cmd_processing_count < cycle_max && !self.is_end {
             self.run_one();
@@ -289,7 +292,7 @@ impl Processor {
                 self.storage.push(input.chars().next().unwrap() as i64);
             }
             _ => {
-                self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap());
+                self.storage.push(cmd.third_char_line_count);
             }
         }
         false

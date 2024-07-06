@@ -110,12 +110,12 @@ mod run_test {
     #[test]
     fn add_1_to_n_speed_test() {
         let duration = execute_speed_test("add1ToN", true);
-        assert!(duration.as_secs() < 5, "add1ToN 속도 테스트 실패")
+        assert!(duration.as_secs() < 2, "add1ToN 속도 테스트 실패")
     }
 
     #[test]
     fn factorization_speed_test() {
         let duration = execute_speed_test("factorization", true);
-        assert!(duration.as_secs() < 20, "factorization 속도 테스트 실패")
+        assert!(duration.as_secs() < 10, "factorization 속도 테스트 실패")
     }
 }
