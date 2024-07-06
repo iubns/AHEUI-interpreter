@@ -71,6 +71,7 @@ pub struct Command {
     way: (i16, i16, bool),
     command_type: CommandType,
     third_char: u32,
+    third_char_line_count: i64,
 }
 
 fn get_command_type(first_char: &u32) -> CommandType {
@@ -177,8 +178,9 @@ fn get_command(char: &char) -> Option<Command> {
 
     let command_type = get_command_type(&first_char);
     let way = get_move_way(&second_char);
+    let third_char_line_count = get_line_count(&third_char).try_into().unwrap();
 
-    return Some(Command { command_type, way, third_char });
+    return Some(Command { command_type, way, third_char, third_char_line_count });
 }
 
 fn revert_way(way: &mut (i16, i16, bool)) {

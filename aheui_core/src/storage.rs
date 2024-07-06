@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use std::collections::VecDeque;
+use std::{ collections::VecDeque, iter };
 
 #[derive(Clone)]
 pub enum StorageType {
@@ -21,11 +21,16 @@ pub struct Storage {
 #[wasm_bindgen]
 impl Storage {
     pub fn new() -> Storage {
-        Storage {
+        let mut storage = Storage {
             stack: Default::default(),
             queue: Default::default(),
             selected_storage: StorageType::Stack(0),
+        };
+        for stack_vec in storage.stack.iter_mut() {
+            stack_vec.reserve(100_000);
         }
+
+        storage
     }
 
     pub fn push(&mut self, value: i64) {

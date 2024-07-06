@@ -1,11 +1,10 @@
-use std::{ usize };
+use std::usize;
 
 use wasm_bindgen::prelude::*;
 use crate::{
     cell::{ CellValue, Position },
     debugger::Debugger,
     get_command,
-    get_line_count,
     input_receiver::{ self, InputReceiver },
     revert_way,
     storage::{ self, Storage },
@@ -148,6 +147,10 @@ impl Processor {
     }
 
     pub fn run_one_cycle(&mut self, cycle_count: i32) {
+        if cycle_count > 100 {
+            self.is_end = true;
+            return;
+        }
         let cycle_max = (10_000_000 * cycle_count).try_into().unwrap();
         while self.cmd_processing_count < cycle_max && !self.is_end {
             self.run_one();
@@ -190,12 +193,6 @@ impl Processor {
             }
         };
 
-        self.way = match cmd.way {
-            (0, 0, false) => self.way,
-            (x, y, true) => (self.way.0 * x, self.way.1 * y, false),
-            _ => cmd.way,
-        };
-
         let is_revert_way = match cmd.command_type {
             CommandType::Exit => {
                 self.is_end = true;
@@ -215,6 +212,12 @@ impl Processor {
             CommandType::Condition => self.storage.condition(),
             CommandType::Equal => self.storage.equal(),
             CommandType::None => false,
+        };
+
+        self.way = match cmd.way {
+            (0, 0, false) => self.way,
+            (x, y, true) => (self.way.0 * x, self.way.1 * y, false),
+            _ => cmd.way,
         };
 
         if is_revert_way {
@@ -245,17 +248,8 @@ impl Processor {
     }
 
     fn get_cmd_from_position(&mut self, position: Position) -> Option<Command> {
-        let cell_value: Option<&mut CellValue> = match self.cmd_list.get_mut(position.y) {
-            Some(row) => row.get_mut(position.x),
-            None => None,
-        };
-
-        let cell_value = match cell_value {
-            Some(cell) => cell,
-            None => {
-                return None;
-            }
-        };
+        //전처리 (cmd setting)에서 빈 공간 없게 했기때문에 예외처리 안해도 됨
+        let cell_value = &mut self.cmd_list[position.y][position.x];
 
         match cell_value.cash_cmd {
             Some(cmd) => Some(cmd),
@@ -298,7 +292,7 @@ impl Processor {
                 self.storage.push(input.chars().next().unwrap() as i64);
             }
             _ => {
-                self.storage.push(get_line_count(&cmd.third_char).try_into().unwrap());
+                self.storage.push(cmd.third_char_line_count);
             }
         }
         false
