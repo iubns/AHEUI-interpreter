@@ -37,18 +37,15 @@ export default function Input() {
   }
 
   useEffect(() => {
-    //@ts-ignore
-    if (!window.getInputData) {
-      //@ts-ignore
-      window.getInputData = getInputData
-      addInitProcessorHook(() => {
-        inputDataOutIndex.current = 0
-      })
-    }
+    addInitProcessorHook(() => {
+      inputDataOutIndex.current = 0
+    })
   }, [])
 
   useEffect(() => {
     inputDataListRef.current = inputList
+    //@ts-ignore
+    window.getInputData = getInputData
   }, [inputList])
 
   function createNewInputData() {

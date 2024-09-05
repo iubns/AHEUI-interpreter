@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use std::{ collections::VecDeque, iter };
+use std::{ collections::VecDeque };
 
 #[derive(Clone)]
 pub enum StorageType {
