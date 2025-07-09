@@ -38,6 +38,7 @@ pub struct Processor {
     pub selected_storage_for_js: usize,
     #[wasm_bindgen(skip)]
     pub input_receiver: input_receiver::InputReceiver,
+    pub highSurrogate: Option<u32>,
 }
 
 #[wasm_bindgen]
@@ -93,6 +94,7 @@ impl Processor {
             cmd_processing_count: 0,
             selected_storage_for_js: 0,
             input_receiver: InputReceiver::new(),
+            highSurrogate: None,
         }
     }
 
@@ -298,6 +300,10 @@ impl Processor {
         false
     }
 
+    pub fn is_surrogate(&mut self, value: u32) -> bool {
+        (0xd800..=0xdbff).contains(&value) || (0xdc00..=0xdfff).contains(&value)
+    }
+
     fn pop(&mut self, cmd: Command) -> bool {
         let value = match self.storage.pop() {
             Some(value) => value,
@@ -307,12 +313,36 @@ impl Processor {
         };
         match cmd.third_char {
             27 => {
-                self.result_list.push(
-                    std::char
-                        ::from_u32(value as u32)
-                        .unwrap()
-                        .to_string()
-                );
+                match self.is_surrogate(value as u32) {
+                    true => {
+                        if let Some(high_surrogate) = self.highSurrogate {
+                            let combined_char = std::char
+                                ::from_u32(
+                                    ((high_surrogate - 0xd800) << 10) +
+                                        ((value as u32) - 0xdc00) +
+                                        0x10000
+                                )
+                                .unwrap();
+                            self.result_list.push(combined_char.to_string());
+                            self.highSurrogate = None;
+                        } else {
+                            self.highSurrogate = Some(value as u32);
+                        }
+                    }
+                    false => {
+                        if let Some(high_surrogate) = self.highSurrogate {
+                            self.result_list.push("�".to_string());
+                            self.highSurrogate = None; // 초기화
+                        } else {
+                            self.result_list.push(
+                                std::char
+                                    ::from_u32(value as u32)
+                                    .unwrap()
+                                    .to_string()
+                            );
+                        }
+                    }
+                }
             }
             21 => {
                 self.result_list.push(value.to_string());
