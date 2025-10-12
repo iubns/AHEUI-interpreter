@@ -3,7 +3,7 @@ import init, {
     parse_wat,
     parse_and_validate_wat,
     validate_wasm,
-} from "../../../public/wasm-parser/wasm_parser"
+} from "../../../public/aheui-core-wasm/aheui_interpreter"
 
 export default function useWatRunner() {
     useEffect(() => {
@@ -12,7 +12,11 @@ export default function useWatRunner() {
 
 
     async function initWasmParser() {
-        await init()
+        const wasmURL =
+          process.env.NODE_ENV === "development"
+            ? "/aheui-core-wasm/aheui_interpreter_bg.wasm"
+            : "/AHEUI-interpreter/aheui-core-wasm/aheui_interpreter_bg.wasm"
+        await init(wasmURL)
     }
 
     async function parseWat(input: string) {
