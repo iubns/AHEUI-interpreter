@@ -1,8 +1,8 @@
-import { atom, useRecoilState } from "recoil"
-import { CellValue } from "../components/Editor/Cell"
 import _ from "lodash"
-import { useEffect, useRef } from "react"
 import Position from "@/interfaces/position"
+import { atom, useRecoilState } from "recoil"
+import { useEffect, useRef, useState } from "react"
+import { CellValue } from "../components/Editor/Cell"
 import { BreakPointer } from "../../../public/aheui-core-wasm/aheui_interpreter"
 
 const cellListAtom = atom<CellValue[]>({
@@ -21,9 +21,11 @@ export default function useEditor() {
   const [brakePointerList, setBreakPointerList] =
     useRecoilState(brakePointListAtom)
   const brakePointerListRef = useRef(brakePointerList)
+  const [isUpdated, setIsUpdated] = useState(false)
 
   useEffect(() => {
-    cellListRef.current = cellList
+      cellListRef.current = cellList
+      setIsUpdated(true)
   }, [cellList])
 
   useEffect(() => {
@@ -116,6 +118,9 @@ export default function useEditor() {
 
   return {
     cellList,
+    setCellList,
+    isUpdated,
+    setIsUpdated,
     togglePoint,
     brakePointerList,
     changeCell,

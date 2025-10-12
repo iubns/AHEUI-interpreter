@@ -1,6 +1,7 @@
 import { useState } from "react"
 import example from "../lib/example"
 import useEditor from "../hook/useEditor"
+import FileArea from "./FileArea"
 
 enum MenuType {
   파일,
@@ -24,7 +25,7 @@ export default function Menu() {
   function FunctionArea() {
     switch (selectedMenu) {
       case MenuType.파일:
-        return <div className="p-2">파일 기능 준비중</div>
+        return <FileArea />
       case MenuType.예제:
         return <ExampleList />
     }
@@ -64,33 +65,27 @@ export default function Menu() {
 }
 
 function ExampleList() {
-  const { bulkInsert, clearCellList } = useEditor()
+  const { bulkInsert, clearCellList, cellList } = useEditor()
 
   function setContentToEditor(content: string) {
+    if(cellList.length > 0){
+      if(!window.confirm("현재 편집 중인 내용이 사라집니다. 계속하시겠습니까?")) {
+        return
+      }
+    }
     clearCellList()
     bulkInsert(content, { x: 0, y: 0 })
   }
 
   return (
     <div className="flex flex-col items-start p-2">
-      <button onClick={() => setContentToEditor(example.helloWorld)}>
-        hello world
-      </button>
-      <button onClick={() => setContentToEditor(example.multiplicationTables)}>
-        구구단
-      </button>
-      <button onClick={() => setContentToEditor(example.addFrom1ToN)}>
-        1부터 N까지 더하기
-      </button>
-      <button onClick={() => setContentToEditor(example.addFrom1ToN_Fast)}>
-        1부터 N까지 더하기 (등차수열)
-      </button>
-      <button onClick={() => setContentToEditor(example.bottlesOfBeer)}>
-        99병의 맥주
-      </button>
-      <button onClick={() => setContentToEditor(example.factorization)}>
-        소인수 분해
-      </button>
+      {
+        example.map(({ name, content }) => (
+          <button key={name} onClick={() => setContentToEditor(content)}>
+            {name}
+          </button>
+        ))
+      }
     </div>
   )
 }
