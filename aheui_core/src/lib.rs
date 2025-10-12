@@ -68,7 +68,7 @@ enum CommandType {
 
 #[derive(Clone, Copy)]
 pub struct Command {
-    way: (i16, i16, bool),
+    way: crate::processor::Way,
     command_type: CommandType,
     third_char: u32,
     third_char_line_count: i64,
@@ -133,22 +133,22 @@ fn get_line_count(third_char: &u32) -> usize {
     }
 }
 
-fn get_move_way(second_char: &u32) -> (i16, i16, bool) {
+fn get_move_way(second_char: &u32) -> crate::processor::Way {
     match second_char {
-        0 => (1, 0, false), // ㅏ
-        2 => (2, 0, false), // ㅑ
-        4 => (-1, 0, false), // ㅓ
-        6 => (-2, 0, false), // ㅕ
-        8 => (0, -1, false), // ㅗ
-        12 => (0, -2, false), // ㅛ
-        13 => (0, 1, false), // ㅜ
-        17 => (0, 2, false), // ㅠ
+        0 => crate::processor::Way { value: crate::processor::WayPosition { x: 1, y: 0 }, is_reverse: false }, // ㅏ
+        2 => crate::processor::Way { value: crate::processor::WayPosition { x: 2, y: 0 }, is_reverse: false }, // ㅑ
+        4 => crate::processor::Way { value: crate::processor::WayPosition { x: -1, y: 0 }, is_reverse: false }, // ㅓ
+        6 => crate::processor::Way { value: crate::processor::WayPosition { x: -2, y: 0 }, is_reverse: false }, // ㅕ
+        8 => crate::processor::Way { value: crate::processor::WayPosition { x: 0, y: -1 }, is_reverse: false }, // ㅗ
+        12 => crate::processor::Way { value: crate::processor::WayPosition { x: 0, y: -2 }, is_reverse: false }, // ㅛ
+        13 => crate::processor::Way { value: crate::processor::WayPosition { x: 0, y: 1 }, is_reverse: false }, // ㅜ
+        17 => crate::processor::Way { value: crate::processor::WayPosition { x: 0, y: 2 }, is_reverse: false }, // ㅠ
 
-        18 => (1, -1, true), // ㅡ
-        19 => (-1, -1, true), // ㅢ
-        20 => (-1, 1, true), // ㅣ
+        18 => crate::processor::Way { value: crate::processor::WayPosition { x: 1, y: -1 }, is_reverse: true }, // ㅡ
+        19 => crate::processor::Way { value: crate::processor::WayPosition { x: -1, y: -1 }, is_reverse: true }, // ㅢ
+        20 => crate::processor::Way { value: crate::processor::WayPosition { x: -1, y: 1 }, is_reverse: true }, // ㅣ
 
-        _ => (0, 0, false), // 기타
+        _ => crate::processor::Way { value: crate::processor::WayPosition { x: 0, y: 0 }, is_reverse: false }, // 기타
     }
 }
 
@@ -183,7 +183,7 @@ fn get_command(char: &char) -> Option<Command> {
     return Some(Command { command_type, way, third_char, third_char_line_count });
 }
 
-fn revert_way(way: &mut (i16, i16, bool)) {
-    way.0 = way.0 * -1;
-    way.1 = way.1 * -1;
+fn revert_way(way: &mut crate::processor::Way) {
+    way.value.x = way.value.x * -1;
+    way.value.y = way.value.y * -1;
 }
