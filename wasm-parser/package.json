@@ -1,0 +1,37 @@
+{
+  "name": "wasm-parser",
+  "version": "0.1.0",
+  "description": "A WebAssembly WAT parser compiled to WASM for browser usage",
+  "main": "pkg/wasm_parser.js",
+  "types": "pkg/wasm_parser.d.ts",
+  "files": [
+    "pkg/"
+  ],
+  "scripts": {
+    "build": "./build-with-types.sh",
+    "serve": "python3 -m http.server 8000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git", 
+    "url": "https://github.com/your-username/wasm-parser.git"
+  },
+  "keywords": [
+    "webassembly",
+    "wasm", 
+    "wat",
+    "parser",
+    "rust",
+    "wasm-bindgen"
+  ],
+  "author": "WASM Parser Contributors",
+  "license": "MIT OR Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/your-username/wasm-parser/issues"
+  },
+  "homepage": "https://github.com/your-username/wasm-parser#readme",
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
