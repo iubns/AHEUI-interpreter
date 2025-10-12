@@ -12,12 +12,19 @@ use crate::{
     CommandType,
 };
 
-#[wasm_bindgen]
+
+
 #[derive(Copy, Clone)]
-//Todo: way 변경하기
+pub struct WayPosition {
+    pub x: i16,
+    pub y: i16,
+}
+
+
+#[derive(Copy, Clone)]
 pub struct Way {
-    value: Position,
-    is_reverse: bool,
+    pub value: WayPosition,
+    pub is_reverse: bool,
 }
 
 #[wasm_bindgen]
@@ -30,7 +37,7 @@ pub struct Processor {
     pub cmd_list: Vec<Vec<CellValue>>,
     pub cmd_size: Position,
     #[wasm_bindgen(skip)]
-    pub way: (i16, i16, bool),
+    pub way: Way,
     pub is_end: bool,
     #[wasm_bindgen(skip)]
     pub result_list: Vec<String>,
@@ -38,7 +45,7 @@ pub struct Processor {
     pub selected_storage_for_js: usize,
     #[wasm_bindgen(skip)]
     pub input_receiver: input_receiver::InputReceiver,
-    pub highSurrogate: Option<u32>,
+    pub high_surrogate: Option<u32>,
 }
 
 #[wasm_bindgen]
@@ -81,20 +88,16 @@ impl Processor {
                 x: 0,
                 y: 0,
             },
-            way: (0, 1, false) /* Way{
-                value: Position{
-                    x: 1,
-                    y: 0,
-                },
+            way: Way {
+                value: WayPosition { x: 0, y: 1 },
                 is_reverse: false,
             },
-            */,
             is_end: false,
             result_list: Vec::new(),
             cmd_processing_count: 0,
             selected_storage_for_js: 0,
             input_receiver: InputReceiver::new(),
-            highSurrogate: None,
+            high_surrogate: None,
         }
     }
 
@@ -217,9 +220,15 @@ impl Processor {
         };
 
         self.way = match cmd.way {
-            (0, 0, false) => self.way,
-            (x, y, true) => (self.way.0 * x, self.way.1 * y, false),
-            _ => cmd.way,
+            Way { value: WayPosition { x: 0, y: 0 }, is_reverse: false } => self.way,
+            Way { value, is_reverse: true } => Way {
+                value: WayPosition {
+                    x: self.way.value.x * value.x,
+                    y: self.way.value.y * value.y,
+                },
+                is_reverse: false,
+            },
+            way => way,
         };
 
         if is_revert_way {
@@ -230,22 +239,22 @@ impl Processor {
     }
 
     fn calc_next_position(&mut self) {
-        let next_x_position = (self.current_position.x as i16) + self.way.0;
+    let next_x_position = (self.current_position.x as i16) + self.way.value.x;
         if next_x_position > (self.cmd_size.x as i16) {
             self.next_position.x = 0;
         } else if next_x_position < 0 {
             self.next_position.x = self.cmd_size.x;
         } else {
-            self.next_position.x = next_x_position as usize;
+            self.next_position.x = next_x_position.max(0) as usize;
         }
 
-        let next_y_position = (self.current_position.y as i16) + self.way.1;
+    let next_y_position = (self.current_position.y as i16) + self.way.value.y;
         if next_y_position > (self.cmd_size.y as i16) {
             self.next_position.y = 0;
         } else if next_y_position < 0 {
             self.next_position.y = self.cmd_size.y;
         } else {
-            self.next_position.y = next_y_position as usize;
+            self.next_position.y = next_y_position.max(0) as usize;
         }
     }
 
@@ -315,7 +324,7 @@ impl Processor {
             27 => {
                 match self.is_surrogate(value as u32) {
                     true => {
-                        if let Some(high_surrogate) = self.highSurrogate {
+                        if let Some(high_surrogate) = self.high_surrogate {
                             let combined_char = std::char
                                 ::from_u32(
                                     ((high_surrogate - 0xd800) << 10) +
@@ -324,15 +333,15 @@ impl Processor {
                                 )
                                 .unwrap();
                             self.result_list.push(combined_char.to_string());
-                            self.highSurrogate = None;
+                            self.high_surrogate = None;
                         } else {
-                            self.highSurrogate = Some(value as u32);
+                            self.high_surrogate = Some(value as u32);
                         }
                     }
                     false => {
-                        if let Some(high_surrogate) = self.highSurrogate {
+                        if let Some(_high_surrogate) = self.high_surrogate {
                             self.result_list.push("�".to_string());
-                            self.highSurrogate = None; // 초기화
+                            self.high_surrogate = None; // 초기화
                         } else {
                             self.result_list.push(
                                 std::char
