@@ -9,6 +9,7 @@ pub mod input_receiver;
 pub mod break_pointer;
 pub mod debugger;
 pub mod wasm_parser;
+pub mod compiler;
 // re-export parser functions to keep the public API unchanged
 pub use wasm_parser::{
     get_module_info,

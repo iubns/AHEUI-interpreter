@@ -1,7 +1,12 @@
 import useAheuiCore from "../hook/useAheuiCore"
 
 export default function Controller() {
-  const { startAll, startOne, startWithDebug, initProcessor } = useAheuiCore()
+  const { startAll, startOne, startWithDebug, initProcessor, wasmBuldAndRun } = useAheuiCore()
+
+  async function test() {
+    initProcessor()
+    wasmBuldAndRun()
+  }
 
   return (
     <div className="flex flex-row gap-10 z-20 justify-center items-center bg-slate-300">
@@ -9,6 +14,7 @@ export default function Controller() {
       <button onClick={startWithDebug}>디버깅 모드로 실행</button>
       <button onClick={startAll}>전체 실행</button>
       <button onClick={initProcessor}>초기화</button>
+      <button onClick={test}>테스트</button>
     </div>
   )
 }

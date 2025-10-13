@@ -6,6 +6,9 @@ import init, {
   Position,
   Processor,
   Debugger,
+  wasm_build_test,
+  parse_and_validate_wat,
+  validate_wasm
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
 
@@ -226,6 +229,28 @@ export default function useAheuiCore() {
     setEndProcessorHooks([...endProcessorHooks, newHook])
   }
 
+  async function wasmBuldAndRun() {
+    if (!aheuiCore) {
+      console.error("aheui-core가 아직 로딩되지 않았습니다.")
+      return
+    }
+
+    //let result = await parse_and_validate_wat('')
+    let result = await wasm_build_test()
+    if (!result) return
+    if(!result.binary){
+      throw new Error(result.error)
+    }
+    const validated = await validate_wasm(new Uint8Array(result.binary))
+
+    const wasmBytes = new Uint8Array(result.binary)
+    const compiledWasm = await WebAssembly.compile(wasmBytes)
+    const instance = await WebAssembly.instantiate(compiledWasm, {})
+
+    console.log(instance.exports.runOne())
+    return instance.exports
+  }
+
   return {
     startOne,
     startAll,
@@ -239,5 +264,6 @@ export default function useAheuiCore() {
     addInitProcessorHook,
     addMediumProcessorHook,
     addEndProcessorHook,
+    wasmBuldAndRun
   }
 }

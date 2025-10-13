@@ -2,17 +2,8 @@ use std::usize;
 
 use wasm_bindgen::prelude::*;
 use crate::{
-    cell::{ CellValue, Position },
-    debugger::Debugger,
-    get_command,
-    input_receiver::{ self, InputReceiver },
-    revert_way,
-    storage::{ self, Storage },
-    Command,
-    CommandType,
+    cell::{ CellValue, Position }, compiler::compile_aheui_to_wat, debugger::Debugger, get_command, input_receiver::{ self, InputReceiver }, revert_way, storage::{ self, Storage }, wasm_parser::{parse_and_validate_wat, WasmParseResult}, Command, CommandType
 };
-
-
 
 #[derive(Copy, Clone)]
 pub struct WayPosition {
@@ -45,7 +36,7 @@ pub struct Processor {
     pub selected_storage_for_js: usize,
     #[wasm_bindgen(skip)]
     pub input_receiver: input_receiver::InputReceiver,
-    pub high_surrogate: Option<u32>,
+    pub high_surrogate: Option<u32>
 }
 
 #[wasm_bindgen]
@@ -71,6 +62,13 @@ impl Processor {
     pub fn set_selected_storage_num(&mut self, stack_num: usize) {
         self.selected_storage_for_js = stack_num;
     }
+
+    #[wasm_bindgen]
+    pub fn compile_to_wasm(&mut self,) -> WasmParseResult {
+        let wat = compile_aheui_to_wat(self.cmd_list.clone());
+        return parse_and_validate_wat(&wat);
+    }
+
 
     pub fn new() -> Processor {
         Processor {
@@ -190,7 +188,7 @@ impl Processor {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
 
-        let cmd = match self.get_cmd_from_position(self.current_position) {
+        let cmd = match self.get_cmd_from_position() {
             Some(cmd) => cmd,
             None => {
                 self.calc_next_position();
@@ -258,7 +256,8 @@ impl Processor {
         }
     }
 
-    fn get_cmd_from_position(&mut self, position: Position) -> Option<Command> {
+    fn get_cmd_from_position(&mut self) -> Option<Command> {
+        let position = self.current_position;
         //전처리 (cmd setting)에서 빈 공간 없게 했기때문에 예외처리 안해도 됨
         let cell_value = &mut self.cmd_list[position.y][position.x];
 
