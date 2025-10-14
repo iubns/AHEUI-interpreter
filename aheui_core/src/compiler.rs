@@ -1,83 +1,62 @@
-use crate::cell::CellValue;
+use web_sys::console;
+
+use crate::{ cell::Position, processor::Processor, Command, CommandType};
 
 const HEADER_WAT: &str = r#"
 (module
   (memory $0 1)
   (export "memory" (memory $0))
-  (func $run (result i64)
+  (func (export "run") (result i64)
 "#;
 
 const FOOTER_WAT: &str = r#"
   )
-  (export "run" (func $run))
 )"#;
 
-pub fn compile_aheui_to_wat(cmd_list: Vec<Vec<CellValue>>) -> String {
+pub fn compile_aheui_to_wat(_processor: &mut Processor) -> String {
     let mut wat_code = String::new();
-    let content =  r#"
-    (local $i i64)
-    (local $acc i64)
 
-    ;; 초기화
-    i64.const 1
-    local.set $i
-
-    i64.const 0
-    local.set $acc
-
-    ;; 루프 시작
-    (loop $cell32
-      ;; acc += i
-      local.get $acc
-      local.get $i
-      i64.add
-      local.set $acc
-
-      ;; i += 1
-      local.get $i
-      i64.const 1
-      i64.add
-      local.tee $i
-
-      ;; i <= 10000001 ?
-      i64.const 10000001
-      i64.lt_s
-      br_if $cell32
-    )
-
-    ;; 결과 반환
-    local.get $acc
-    "#;
+    let mut row_index = 0;
+    while row_index <= _processor.cmd_size.y {
+        let mut col_index = 0;
+        while col_index <= _processor.cmd_size.x {
+            let position = Position{
+              x: col_index,
+              y: row_index,
+            };
+            let cell_cmd = _processor.get_cmd_from_position(position);
+            let cell_wat = to_wat(cell_cmd);
+            console::log_1(&format!("셀 ({}, {}) -> WAT: {}", col_index, row_index, cell_wat).into());
+            wat_code.push_str(&cell_wat);
+            col_index += 1;
+        }
+        row_index += 1;
+    }
     let func_code = format!(
         "{}{}{}",
         HEADER_WAT,
-       content,
+       wat_code,
         FOOTER_WAT
     );
-    wat_code.push_str(&func_code);
-    wat_code
+    console::log_1(&format!("rowIndex: {}, colIndex: {}", _processor.cmd_size.y, _processor.cmd_size.x).into());
+    for row in &_processor.cmd_list {
+        let row_str: String = row.iter().map(|cell| cell.value).collect();
+        console::log_1(&row_str.into());
+    }
+    console::log_1(&format!("WAT 코드:\n{}", func_code).into());
+    func_code
 }
 
-/*
-(module
-  (func (result i32)
-    (i32.const 42)
-  )
-  (export "helloWorld" (func 0))
-)
-   */
-
-  /*
-  (func $offsetFromCoordinate (param $x i32) (param $y i32) (result i32)
-  get_local $y
-  i32.const 50
-  i32.mul
-  get_local $x
-  i32.add
-  i32.const 4
-  i32.mul
-)
-
-(export "offsetFromCoordinate" (func $offsetFromCoordinate))
-
-*/
+fn to_wat(cmd: Command) -> String {
+    let wat_code = match cmd.command_type {
+        CommandType::Add => "i64.add\n".to_string(),
+        CommandType::Sub => "i64.sub\n".to_string(),
+        CommandType::Mul => "i64.mul\n".to_string(),
+        CommandType::Div => "i64.div_s\n".to_string(),
+        CommandType::Mod => "i64.rem_s\n".to_string(),
+        CommandType::Push => format!("i64.const {}\n", cmd.third_char_line_count),
+        CommandType::Exit => "return\n".to_string(),
+        _ => "\n".to_string(), // 다른 명령어들은 무시
+    };
+    format!("   {}", wat_code)
+}

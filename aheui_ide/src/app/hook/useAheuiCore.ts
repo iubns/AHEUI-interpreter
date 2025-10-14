@@ -6,10 +6,8 @@ import init, {
   Position,
   Processor,
   Debugger,
-  validate_wasm
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
-import { time } from "console"
 
 const outputContentAtom = atom<String[]>({
   key: "result-atom",
@@ -26,6 +24,7 @@ const nextProcessingPositionAtom = atom<Position>({
   default: {
     x: 0,
     y: -1,
+    [Symbol.dispose]: () => {},
     free: () => {},
   },
 })
@@ -235,7 +234,8 @@ export default function useAheuiCore() {
     }
 
     const process = initProcessor()
-    let result = await process?.compile_to_wasm()
+    if (!process) return
+    let result = await process.compile_to_wasm()
     if (!result) return
     if(!result.binary){
       throw new Error(result.error)
@@ -243,7 +243,12 @@ export default function useAheuiCore() {
 
     const wasmBytes = new Uint8Array(result.binary)
     const compiledWasm = await WebAssembly.compile(wasmBytes)
-    const instance = await WebAssembly.instantiate(compiledWasm, {})
+    const instance = await WebAssembly.instantiate(compiledWasm, {}) as WebAssembly.Instance & 
+    {
+      exports: {
+        run: () => number
+      }
+    }
 
     const startTime = window.performance.now()
     const runningResult = instance.exports.run()

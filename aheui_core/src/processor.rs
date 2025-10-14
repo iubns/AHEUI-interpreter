@@ -65,7 +65,7 @@ impl Processor {
 
     #[wasm_bindgen]
     pub fn compile_to_wasm(&mut self,) -> WasmParseResult {
-        let wat = compile_aheui_to_wat(self.cmd_list.clone());
+        let wat = compile_aheui_to_wat(self);
         return parse_and_validate_wat(&wat);
     }
 
@@ -188,7 +188,7 @@ impl Processor {
         self.current_position.x = self.next_position.x;
         self.current_position.y = self.next_position.y;
 
-        let cmd = match self.get_cmd_from_position() {
+        let cmd = match self.get_cmd_from_current_position() {
             Some(cmd) => cmd,
             None => {
                 self.calc_next_position();
@@ -256,7 +256,7 @@ impl Processor {
         }
     }
 
-    fn get_cmd_from_position(&mut self) -> Option<Command> {
+    fn get_cmd_from_current_position(&mut self) -> Option<Command> {
         let position = self.current_position;
         //전처리 (cmd setting)에서 빈 공간 없게 했기때문에 예외처리 안해도 됨
         let cell_value = &mut self.cmd_list[position.y][position.x];
@@ -358,5 +358,15 @@ impl Processor {
             _ => {}
         }
         false
+    }
+}
+
+impl Processor {
+    pub fn get_cmd_from_position(&self, position: Position) -> Command {
+        let cell_value = &self.cmd_list[position.y][position.x];
+        match cell_value.cash_cmd {
+            Some(cmd) => cmd,
+            None => get_command(&cell_value.value).unwrap(),
+        }
     }
 }
