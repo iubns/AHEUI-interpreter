@@ -10,6 +10,7 @@ pub mod break_pointer;
 pub mod debugger;
 pub mod wasm_parser;
 pub mod compiler;
+
 // re-export parser functions to keep the public API unchanged
 pub use wasm_parser::{
     get_module_info,
@@ -17,6 +18,7 @@ pub use wasm_parser::{
     parse_wat,
     validate_wasm,
 };
+
 #[wasm_bindgen]
 pub fn run_new(cell_list: Vec<CellValue>, cmd_size_x: usize, cmd_size_y: usize) -> Processor {
     let mut processor = Processor::new();

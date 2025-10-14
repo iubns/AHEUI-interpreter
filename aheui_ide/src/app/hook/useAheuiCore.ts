@@ -6,11 +6,10 @@ import init, {
   Position,
   Processor,
   Debugger,
-  wasm_build_test,
-  parse_and_validate_wat,
   validate_wasm
 } from "../../../public/aheui-core-wasm/aheui_interpreter"
 import useEditor from "./useEditor"
+import { time } from "console"
 
 const outputContentAtom = atom<String[]>({
   key: "result-atom",
@@ -235,19 +234,22 @@ export default function useAheuiCore() {
       return
     }
 
-    //let result = await parse_and_validate_wat('')
-    let result = await wasm_build_test()
+    const process = initProcessor()
+    let result = await process?.compile_to_wasm()
     if (!result) return
     if(!result.binary){
       throw new Error(result.error)
     }
-    const validated = await validate_wasm(new Uint8Array(result.binary))
 
     const wasmBytes = new Uint8Array(result.binary)
     const compiledWasm = await WebAssembly.compile(wasmBytes)
     const instance = await WebAssembly.instantiate(compiledWasm, {})
 
-    console.log(instance.exports.runOne())
+    const startTime = window.performance.now()
+    const runningResult = instance.exports.run()
+    const endTime = window.performance.now()
+    setProcessingTime(endTime - startTime)
+    setOutputContent([runningResult.toString()])
     return instance.exports
   }
 
