@@ -24,6 +24,7 @@ const nextProcessingPositionAtom = atom<Position>({
   default: {
     x: 0,
     y: -1,
+    [Symbol.dispose]: () => {},
     free: () => {},
   },
 })
