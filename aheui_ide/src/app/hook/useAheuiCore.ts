@@ -106,6 +106,7 @@ export default function useAheuiCore() {
     }
     let maxRowSize = 0
     let maxColSize = 0
+    console.log("cellList", cellList) 
     const rsCellList = cellList.map((cell) => {
       const rsCell = get_cell_value(cell.position.x, cell.position.y)
       //Todo: 사실 없을 일이 없을거 같음, 확실히 확인후 ts nullable제거
@@ -118,6 +119,7 @@ export default function useAheuiCore() {
       }
       return rsCell
     })
+    console.log(maxColSize, maxRowSize)
     const newProcessor = run_new(rsCellList, maxColSize, maxRowSize)
     setProcessor(newProcessor)
     setNextProcessingPosition(newProcessor.current_position)
@@ -251,10 +253,15 @@ export default function useAheuiCore() {
     }
 
     const startTime = window.performance.now()
-    const runningResult = instance.exports.run()
+    const { run , memory}  = instance.exports
+    const runningResult = run()
     const endTime = window.performance.now()
     setProcessingTime(endTime - startTime)
     setOutputContent([runningResult.toString()])
+    const buffer = new Uint8Array(memory.buffer);
+    const decoder = new TextDecoder("utf-8");
+    const str = decoder.decode(buffer)
+    console.log(str)
     return instance.exports
   }
 

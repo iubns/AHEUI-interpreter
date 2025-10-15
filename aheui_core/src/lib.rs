@@ -36,12 +36,16 @@ pub fn create_processor_from_string(content: &str) -> Processor {
             let mut cell = get_cell_value(col_index, row_index);
             cell.value = *cell_char;
             cell_list.push(cell);
+
+            if max_col < col_index {
+                max_col = col_index;
+            }
         }
-        if max_col < row.len() {
-            max_col = row.len();
+        if max_col < row_index {
+            max_col = row_index;
         }
     }
-    run_new(cell_list, max_col, parsed_content.len())
+    run_new(cell_list, max_col, parsed_content.len() - 1)
 }
 
 #[wasm_bindgen]
@@ -178,7 +182,7 @@ fn parse(content: &str) -> Vec<Vec<char>> {
 fn get_command(char: &char) -> Option<Command> {
     let unicode = *char as u32;
 
-    if unicode < 0xac00 {
+    if unicode < 0xac00 || unicode > 0xD7A3  {
         return None;
     }
 
