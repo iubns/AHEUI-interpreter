@@ -59,6 +59,11 @@ const storageAtom = atom<Array<BigInt64Array>>({
   default: [],
 })
 
+const aheuiWatAtom = atom<string>({
+  key: "wasm-atom",
+  default: '',
+})
+
 let aheuiCore: undefined | null | InitOutput = undefined
 
 export default function useAheuiCore() {
@@ -70,6 +75,7 @@ export default function useAheuiCore() {
   const [processingTime, setProcessingTime] = useRecoilState(processingTimeAtom)
   const [runningCount, setRunningCount] = useRecoilState(runningCountAtom)
   const [storageList, setStorage] = useRecoilState(storageAtom)
+  const [aheuiWat, setAheuiWat] = useRecoilState(aheuiWatAtom)
   const { cellList, brakePointerList } = useEditor()
 
   const [initProcessorHooks, setInitProcessorHooks] = useRecoilState(
@@ -237,6 +243,7 @@ export default function useAheuiCore() {
 
     const process = initProcessor()
     if (!process) return
+    setAheuiWat(process.compile_aheui_to_wat())
     let result = await process.compile_to_wasm()
     if (!result) return
     if(!result.binary){
@@ -249,19 +256,26 @@ export default function useAheuiCore() {
     {
       exports: {
         run: () => number
+        memory?: WebAssembly.Memory
       }
     }
 
+    const { run, memory } = instance.exports
     const startTime = window.performance.now()
-    const { run , memory}  = instance.exports
-    const runningResult = run()
+    run()
     const endTime = window.performance.now()
     setProcessingTime(endTime - startTime)
-    setOutputContent([runningResult.toString()])
-    const buffer = new Uint8Array(memory.buffer);
-    const decoder = new TextDecoder("utf-8");
-    const str = decoder.decode(buffer)
-    console.log(str)
+
+    if (memory instanceof WebAssembly.Memory) {
+      const buffer = new Uint8Array(memory.buffer)
+      const decoder = new TextDecoder("utf-8")
+      const str = decoder.decode(buffer)
+      setOutputContent([str])
+    } else {
+      setOutputContent([])
+      console.warn("WASM instance has no exported memory")
+    }
+
     return instance.exports
   }
 
@@ -278,6 +292,7 @@ export default function useAheuiCore() {
     addInitProcessorHook,
     addMediumProcessorHook,
     addEndProcessorHook,
-    wasmBuldAndRun
+    wasmBuldAndRun,
+    aheuiWat
   }
 }

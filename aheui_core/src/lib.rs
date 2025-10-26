@@ -10,6 +10,7 @@ pub mod break_pointer;
 pub mod debugger;
 pub mod wasm_parser;
 pub mod compiler;
+pub mod wasm_funtions;
 
 // re-export parser functions to keep the public API unchanged
 pub use wasm_parser::{

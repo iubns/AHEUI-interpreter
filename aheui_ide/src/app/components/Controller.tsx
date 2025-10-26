@@ -3,7 +3,7 @@ import useAheuiCore from "../hook/useAheuiCore"
 export default function Controller() {
   const { startAll, startOne, startWithDebug, initProcessor, wasmBuldAndRun } = useAheuiCore()
 
-  async function test() {
+  async function compile() {
     initProcessor()
     wasmBuldAndRun()
   }
@@ -14,7 +14,7 @@ export default function Controller() {
       <button onClick={startWithDebug}>디버깅 모드로 실행</button>
       <button onClick={startAll}>전체 실행</button>
       <button onClick={initProcessor}>초기화</button>
-      <button onClick={test}>테스트</button>
+      <button onClick={compile}>컴파일</button>
     </div>
   )
 }

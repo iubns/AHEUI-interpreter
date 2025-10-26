@@ -69,6 +69,11 @@ impl Processor {
         return parse_and_validate_wat(&wat);
     }
 
+    #[wasm_bindgen]
+    pub fn compile_aheui_to_wat(&mut self,) -> String {
+        compile_aheui_to_wat(self)
+    }
+
 
     pub fn new() -> Processor {
         Processor {

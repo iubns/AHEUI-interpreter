@@ -4,11 +4,13 @@ import Output from "./Output"
 import Input from "./Input"
 import useAheuiCore from "../hook/useAheuiCore"
 import Storage from "./Storage"
+import Wasm from "./Wasm"
 
 enum Tabs {
   output,
   input,
   storage,
+  wasm,
 }
 
 export default function Bottom() {
@@ -37,6 +39,9 @@ export default function Bottom() {
       case Tabs.storage:
         tabName = "저장공간"
         break
+      case Tabs.wasm:
+        tabName = "WASM"
+        break
     }
 
     return (
@@ -57,10 +62,12 @@ export default function Bottom() {
         <TabComponent tab={Tabs.input} />
         <TabComponent tab={Tabs.output} />
         <TabComponent tab={Tabs.storage} />
+        <TabComponent tab={Tabs.wasm} />
       </div>
       {selectedTab === Tabs.output && <Output />}
       {selectedTab === Tabs.input && <Input />}
       {selectedTab === Tabs.storage && <Storage />}
+      {selectedTab === Tabs.wasm && <Wasm />}
     </div>
   )
 }
